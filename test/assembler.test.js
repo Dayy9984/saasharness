@@ -18,7 +18,7 @@ test('assembler creates deterministic web-only Cloudflare workspace', async () =
   await access(path.join(output, 'wrangler.jsonc'));
   await assert.rejects(() => access(path.join(output, 'mobile')));
   const lock = await readJson(path.join(output, 'module-lock.json'));
-  assert.equal(lock.starter, 'b2c-react-cloudflare@0.1.0');
+  assert.equal(lock.starter, 'b2c-react-cloudflare@0.3.0');
 });
 
 test('assembler installs workflow artifacts and universal skills', async () => {
