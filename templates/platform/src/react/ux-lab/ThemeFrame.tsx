@@ -33,7 +33,12 @@ export function ThemeFrame({ theme, compact = false }: { theme: Theme; compact?:
   } as CSSProperties;
 
   return (
-    <section className={`theme-frame ${compact ? 'theme-frame--compact' : ''}`} style={style} aria-label={`${theme.name} design preview`}>
+    <section
+      className={`theme-frame theme-frame--${theme.id} ${compact ? 'theme-frame--compact' : ''}`}
+      data-theme-system={theme.id}
+      style={style}
+      aria-label={`${theme.name} design preview`}
+    >
       <header className="theme-frame__header">
         <span className="theme-frame__brand">PRODUCT</span>
         <span className="theme-frame__status">DESIGN ONLY</span>
