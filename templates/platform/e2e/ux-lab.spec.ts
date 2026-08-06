@@ -23,6 +23,6 @@ test('health route exposes generated profile identity', async ({ request }) => {
   const response = await request.get('/api/health');
   expect(response.ok()).toBe(true);
   const body = await response.json();
-  expect(body.ok()).toBe(true);
+  expect(body.ok).toBe(true);
   expect(typeof body.profileHash).toBe('string');
 });
