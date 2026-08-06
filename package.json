@@ -1,7 +1,7 @@
 {
   "name": "saasharness",
   "version": "0.3.0",
-  "description": "Human-in-the-loop B2C SaaS workflow, mandatory critic, and production module generator",
+  "description": "Upstream-composed, human-in-the-loop B2C SaaS workflow, mandatory critic, and production module generator",
   "type": "module",
   "bin": {
     "saasharness": "./bin/saasharness.js"
@@ -21,7 +21,10 @@
     "src",
     "templates",
     "skills",
+    "integrations",
+    "harness-lab",
     "docs",
+    "upstreams.lock.json",
     "AGENTS.md",
     "README.md",
     "THIRD_PARTY_NOTICES.md"
