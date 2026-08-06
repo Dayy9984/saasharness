@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadContracts, validateContracts } from './contracts.js';
-import { prepareOutput, writeFiles, copyDirectory } from './fs-utils.js';
+import { prepareOutput, writeFiles, copyDirectory, copyFile } from './fs-utils.js';
 import { resolvePlan } from './resolver.js';
 import { starterFiles } from './starter-files.js';
 import { platformConfigFiles } from './platform-config.js';
@@ -31,6 +31,8 @@ export async function assembleProject(contractDir, outDir, options = {}) {
   await copyDirectory(path.join(packageRoot, 'templates', 'platform'), outDir);
   await writeFiles(outDir, platformConfigFiles(plan));
   await copyDirectory(path.join(packageRoot, 'skills'), path.join(outDir, '.agents', 'skills'));
+  await copyDirectory(path.join(packageRoot, 'integrations'), path.join(outDir, '.saasharness', 'upstreams'));
+  await copyFile(path.join(packageRoot, 'upstreams.lock.json'), path.join(outDir, '.saasharness', 'upstreams.lock.json'));
 
   return { outDir: path.resolve(outDir), validation, plan };
 }
