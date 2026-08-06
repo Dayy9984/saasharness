@@ -8,6 +8,8 @@ saasharness init ./contracts --name my-product
 
 The product owner and coding agent complete `product.yml`. Market, pricing, entitlement, privacy, and product intent remain human-owned. Low-level infrastructure is resolved after product approval.
 
+New projects receive UX contract version 3, which explicitly separates design philosophy, theme exploration, and the real mock-data prototype.
+
 ## 2. Bootstrap from pinned GitHub bases
 
 ```bash
@@ -21,32 +23,33 @@ saasharness bootstrap ./contracts \
 
 The executable bootstrap:
 
-1. creates a temporary pinned checkout of `cloudflare/templates`;
+1. creates a pinned checkout of `cloudflare/templates`;
 2. copies its official `vite-react-template` into the destination;
 3. overlays the B2C platform, contracts, modules, skills, tests, workflow state, and evidence rules;
 4. checks out the selected upstream profile into `.saasharness/sources/`;
 5. runs the official Spec Kit initializer with the included B2C preset;
 6. installs the pinned Impeccable project integration;
-7. records source commits and runs the upstream doctor.
+7. installs, audits, builds, unit-tests, and browser-tests the generated project;
+8. records source commits and runs the upstream doctor.
 
-Use `core`, `lifecycle`, or `all` depending on whether living-change, long-context, product-agent, Meta-Harness, and Hermes sources are required.
+## 3. Configure the coding-agent processes
 
-## 3. Configure the external coding-agent processes
+`--provider codex` writes a ready non-interactive Codex configuration. Other providers can use:
 
 ```bash
 saasharness agent init . --provider external-agent-cli
 ```
 
-Edit `.saasharness/agent.json`, or set:
+or environment argv arrays:
 
 ```bash
 export SAASHARNESS_BUILDER_COMMAND_JSON='["agent-cli","...","-"]'
 export SAASHARNESS_CRITIC_COMMAND_JSON='["agent-cli","...","-"]'
 ```
 
-Commands are argv arrays, not shell strings. The stage prompt is passed through stdin. Builder and critics run in separate processes.
+Commands are argv arrays, not shell strings. Builder and critics run in separate processes.
 
-## 4. Execute the current stage
+## 4. Execute the stage lifecycle
 
 ```bash
 saasharness run . --execute
@@ -56,7 +59,9 @@ Stages:
 
 ```text
 discovery
-→ ux-ia
+→ ux-philosophy
+→ ux-themes
+→ ux-prototype
 → architecture
 → plan
 → implementation
@@ -65,40 +70,109 @@ discovery
 
 For each stage the runner:
 
-1. reads the current human-approved contracts and workflow state;
-2. generates a stage prompt naming the canonical local upstream checkouts;
-3. invokes the builder process;
+1. reads human-owned contracts and workflow state;
+2. generates a prompt naming the canonical local upstream checkouts;
+3. invokes a fresh builder process;
 4. runs stage verification;
 5. creates the mandatory critic packet;
-6. invokes one isolated critic process per required channel;
-7. validates each JSON report against the critic schema;
+6. invokes one isolated critic process per channel;
+7. validates each JSON report;
 8. synthesizes pass, revise, or block;
-9. runs another builder round when revision is allowed;
-10. stops at PASS for human approval, or escalates after the bounded maximum.
+9. runs another builder round when allowed;
+10. stops at PASS for human approval or escalates after the bounded maximum.
 
-## 5. Human approval
-
-```bash
-saasharness workflow approve . discovery --by "product-owner"
-```
-
-Approval never comes from the builder or critic process. The current stage advances only after the required critic decision is `pass` and the human approves it.
-
-## 6. Stage ownership
-
-### Discovery
+## 5. Discovery
 
 Canonical base: GitHub Spec Kit.
 
 Outputs include product constitution, clarified requirements, product specification, policy decisions, assumptions, and unresolved questions. `contracts/product.yml` and Spec Kit artifacts must remain consistent.
 
-### UX / IA
+## 6. UX stage A — design philosophy
 
-Canonical bases: Open Design, Pro UI Engineering, Impeccable, React UX Lab.
+Canonical bases: Open Design, Pro UI Engineering, and Impeccable.
 
-The deliverable is a running React experience, not a static document. It must include realistic fixtures, recovery paths, paid limits, interruption, long content, responsiveness, accessibility, spring motion, and reduced-motion behavior.
+The product owner and agent discuss the design philosophy before components. The root `SOUL.md` captures:
 
-Required independent channels:
+- product essence and emotional promise;
+- audience, context, trust, accessibility, and regional considerations;
+- design principles with positive and negative rules;
+- typography, color, shape, density, surface, icon, illustration, and image grammar;
+- spring-motion, interruption, latency disclosure, and reduced-motion philosophy;
+- references, anti-references, and component constitution.
+
+Required critics:
+
+```text
+product-fit
++ design-coherence
+```
+
+Approval is blocked if `SOUL.md` is absent.
+
+```bash
+saasharness run . --stage ux-philosophy --execute
+saasharness workflow approve . ux-philosophy --by "product-owner"
+```
+
+## 7. UX stage B — Pinterest research and 15-theme exploration
+
+Pinterest is used through authorized browser research. The workflow forbids automatic scraping and source-asset copying.
+
+Store in `artifacts/02-ux/pinterest-research.yml`:
+
+- Pin, Board, or search URL;
+- visible attribution where available;
+- abstract observations about layout, type, palette, texture, shape, density, interaction, and motion;
+- explicit `do_not_copy` notes.
+
+Generate exactly 15 materially different systems for the same neutral canonical screen. This phase contains no realistic product mock data.
+
+Routes:
+
+```text
+/__ux/themes
+/__ux/themes/<theme-id>
+```
+
+Required critics:
+
+```text
+research-integrity
++ theme-diversity
++ browser-evidence
+```
+
+Human approval is explicit:
+
+```bash
+saasharness design status .
+saasharness design list-themes .
+saasharness design select-theme . <theme-id> --by "product-owner"
+saasharness workflow approve . ux-themes --by "product-owner"
+```
+
+The source-controlled selection is required before the prototype stage.
+
+## 8. UX stage C — modular React mock-data prototype
+
+Using the approved `SOUL.md` and selected theme, the harness builds:
+
+- semantic tokens;
+- reusable primitives and patterns;
+- feature components with public boundaries;
+- page composition;
+- IA and primary/recovery journeys;
+- screen contracts;
+- realistic mock data;
+- loading, empty, error, permission, paid-limit, long-content, retry, delayed-success, interruption, responsive, and reduced-motion behavior.
+
+The running prototype is at:
+
+```text
+/__ux/prototype
+```
+
+Required critics:
 
 ```text
 experience
@@ -106,27 +180,23 @@ experience
 + browser-evidence
 ```
 
-### Architecture
+Source review alone cannot pass this stage.
+
+## 9. Architecture
 
 Canonical bases: Cloudflare Templates, Spec Kit, AI SaaS Starter safety invariants, and Open SaaS capability coverage.
 
 The stage covers frontend/backend/module boundaries, D1 or PostgreSQL+Hyperdrive, migrations, cache/freshness, identity/payment adapters, Admin/CS/privacy, queues/storage/email/realtime, latency, traces, cost, and recovery.
 
-### Plan
+## 10. Plan and implementation
 
-Canonical bases: Spec Kit and Superpowers.
+Plan uses Spec Kit and Superpowers. Spec Kit tasks are canonical, and product-feature WIP remains one.
 
-Spec Kit tasks are canonical. Product-feature WIP remains one. Tasks include exact paths, dependencies, acceptance, RED evidence, migration, rollback, critic, and runtime verification.
+Implementation uses Superpowers, attributed money-path constraints, and Impeccable UI verification. Strict RED–GREEN–REFACTOR applies to domain/API/data/auth/billing/credits/privacy and observable UI behavior. Full journeys are scenario-first.
 
-### Implementation
+## 11. Release
 
-Canonical base: Superpowers, with attributed AI SaaS Starter money-path constraints and Impeccable UI verification.
-
-Strict RED-GREEN-REFACTOR applies to domain/API/data/auth/billing/credits/privacy and observable UI behavior. Full journeys are scenario-first. Tests may not be weakened to obtain GREEN.
-
-### Release
-
-Canonical bases: OpenSpec, Cloudflare release tooling, and independent release critics.
+Canonical bases: OpenSpec, Cloudflare release tooling, and release critics.
 
 ```text
 Preview
@@ -138,28 +208,34 @@ Preview
 → Production
 ```
 
-## 7. Upstream maintenance
+## 12. Tetris pilot
 
-```bash
-saasharness upstreams sync . --profile all --execute
-saasharness upstreams doctor . --profile all
+The CI virtual environment exercises the new UX lifecycle with a simple playable falling-block game:
+
+```text
+approved product/UX/feature contracts
+→ SOUL.md
+→ 15-theme gallery
+→ explicit neon-arcade theme approval
+→ modular React Tetris
+→ engine unit test
+→ browser theme-gallery journey
+→ browser move / rotate / hard-drop / restart journey
 ```
 
-All source workspaces are detached at exact commits from `upstreams.lock.json`. No floating default branch is accepted. `upstream-sources.json` records expected and actual commits.
+The pilot records public Pinterest reference URLs and abstract observations. It does not claim a live authenticated Pinterest review; that remains a real human-research responsibility.
 
-## 8. Manual critic controls
-
-The automated runner uses the same public workflow primitives:
+## 13. Manual critic controls
 
 ```bash
-saasharness workflow packet . ux-ia
-saasharness workflow record . ux-ia experience --report ./experience.json
-saasharness workflow record . ux-ia design --report ./design.json
-saasharness workflow record . ux-ia browser-evidence --report ./browser.json
-saasharness workflow evaluate . ux-ia
-saasharness workflow revise . ux-ia
+saasharness workflow packet . ux-themes
+saasharness workflow record . ux-themes research-integrity --report ./research.json
+saasharness workflow record . ux-themes theme-diversity --report ./diversity.json
+saasharness workflow record . ux-themes browser-evidence --report ./browser.json
+saasharness workflow evaluate . ux-themes
+saasharness workflow revise . ux-themes
 ```
 
-## 9. Production evidence
+## 14. Production evidence
 
-Generated code remains blocked from production until the selected product passes its real provider and operational gates. These include account lifecycles, payment/refund/subscription states, idempotency and replay, database race/recovery, operator journeys, deployed environment promotion, and post-release verification. The harness automates the workflow and evidence collection; it does not fabricate credentials or claim unexecuted sandbox evidence.
+Generated code remains blocked from production until the selected product passes real provider and operational gates: account lifecycles, payment/refund/subscription states, idempotency and replay, database race/recovery, operator journeys, deployed environment promotion, and post-release verification. The harness automates workflow and evidence collection; it does not fabricate credentials or unexecuted sandbox evidence.
