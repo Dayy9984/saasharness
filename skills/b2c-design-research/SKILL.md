@@ -1,6 +1,6 @@
 ---
 name: b2c-design-research
-description: Conduct traceable, anti-copy visual research and translate it into 15 original same-screen theme systems for human selection.
+description: Conduct traceable, anti-copy UI research and translate it into 15 practical same-screen B2C SaaS treatment variants for human selection.
 ---
 
 # B2C Design Research
@@ -10,34 +10,37 @@ description: Conduct traceable, anti-copy visual research and translate it into 
 - `contracts/product.yml`
 - `contracts/ux.yml`
 - human-approved `SOUL.md`
-- primary canonical screen purpose
+- one canonical B2C SaaS screen
 - target region and audience
 - references and anti-references
 
 ## Research procedure
 
-1. Form 5–8 search clusters from the product soul, audience, and interaction context.
-2. Browse Pinterest manually or through an authorized browser session.
-3. Record Pin, Board, or search URLs and visible attribution in `artifacts/02-ux/pinterest-research.yml`.
-4. For each reference, record only abstract observations: layout, type, color, texture, shape, density, interaction, motion, and trust cues.
-5. Record what must not be copied.
-6. Synthesize exactly 15 original candidate systems.
-7. Render the same neutral screen in all candidates.
-8. Run research-integrity, theme-diversity, and browser-evidence critics independently.
+1. Start from the default clean B2C foundation: legibility, predictable hierarchy, familiar controls, accessible focus, and low cognitive load.
+2. Form search clusters around practical decisions such as Apple-like selected glass controls, Linear-like density, Miro-like grouping, Stripe-like trust, content readability, Admin density, onboarding spaciousness, and accessibility.
+3. Browse Pinterest or other public sources manually or through an authorized browser session.
+4. Record reviewed URLs or search URLs in `artifacts/02-ux/pinterest-research.yml`.
+5. Record only abstract observations: hierarchy, button material, surface depth, density, radius, focus, accent, motion, trust, and anti-copy constraints.
+6. Synthesize exactly 15 original treatment variants of the same conventional screen.
+7. Keep IA, layout, content skeleton, and user flow fixed across all candidates.
+8. Run research-integrity, treatment-usefulness, and browser-evidence critics independently.
 
 ## Quality bar
 
-A candidate is not distinct if it changes only colors, gradients, shadows, or radius. At least two structural dimensions must change.
+A useful candidate changes one or more practical component decisions enough for the product owner to compare, but it must remain a clean, readable B2C SaaS interface.
 
-The set should cover meaningful extremes without becoming random:
+Good comparison axes include:
 
-- calm ↔ energetic;
-- dense ↔ spacious;
-- editorial ↔ instrument-like;
-- soft ↔ geometric;
-- familiar ↔ expressive;
-- light ↔ dark;
-- consumer warmth ↔ technical precision.
+- solid button ↔ selected glass control;
+- flat surface ↔ soft card depth;
+- compact ↔ standard ↔ spacious density;
+- smaller ↔ larger radius;
+- neutral ↔ warmer visual tone;
+- standard ↔ stronger focus treatment;
+- instant ↔ snappy ↔ smooth spring response;
+- content-first ↔ data-scan-first emphasis.
+
+Do not generate neon, brutalist, game-like, novelty, or art-direction themes unless the product owner explicitly requests that product category. Do not alter the approved IA merely to make candidates look different.
 
 ## Output
 
@@ -47,4 +50,4 @@ The set should cover meaningful extremes without becoming random:
 - detail pages `/__ux/themes/<theme-id>`
 - human-approved `artifacts/02-ux/theme-selection.yml`
 
-Never fabricate reviewed Pin URLs. Query-only scaffolding must remain explicitly marked as unreviewed until browser research occurs.
+Never fabricate reviewed URLs. Query-only scaffolding must remain explicitly marked as unreviewed until browser research occurs.
