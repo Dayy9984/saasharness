@@ -1,4 +1,5 @@
 import { mkdtemp, rm } from 'node:fs/promises';
+import { spawnSync } from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
 import { assembleProject } from './assembler.js';
@@ -7,6 +8,28 @@ import { doctorUpstreams, syncUpstreams, upstreamSourcePath } from './upstream-w
 import { writeAgentConfig } from './orchestrator.js';
 
 export const REQUIRED_BOOTSTRAP_INTEGRATIONS = Object.freeze(['spec-kit', 'impeccable']);
+
+export const BOOTSTRAP_PROJECT_COMMANDS = Object.freeze([
+  ['npm', ['install']],
+  ['npm', ['audit', '--omit=dev', '--audit-level=high']],
+  ['npm', ['run', 'check']],
+  ['npm', ['test']],
+  ['npx', ['playwright', 'install', 'chromium']],
+  ['npm', ['run', 'test:e2e']],
+]);
+
+function runProjectCommand(projectDir, step) {
+  const [bin, args] = step;
+  const result = spawnSync(bin, args, {
+    cwd: projectDir,
+    stdio: 'inherit',
+    encoding: 'utf8',
+    env: process.env,
+  });
+  if (result.error) throw result.error;
+  if (result.status !== 0) throw new Error(`${bin} ${args.join(' ')} failed with status ${result.status}`);
+  return { executable: [bin, ...args], status: result.status };
+}
 
 export async function bootstrapPlan(contractDir, outDir, options = {}) {
   const root = path.resolve(outDir);
@@ -22,6 +45,7 @@ export async function bootstrapPlan(contractDir, outDir, options = {}) {
       template: 'vite-react-template',
     },
     integrations: REQUIRED_BOOTSTRAP_INTEGRATIONS,
+    projectVerification: options.verify === false ? [] : BOOTSTRAP_PROJECT_COMMANDS,
     humanGates: ['product documents', 'React UX/IA', 'architecture', 'plan', 'release'],
   };
 }
@@ -64,6 +88,14 @@ export async function bootstrapProject(contractDir, outDir, options = {}) {
       await installPinnedIntegration('superpowers', assembled.outDir, options.provider ?? 'codex', false),
       await installPinnedIntegration('open-design', assembled.outDir, options.provider ?? 'codex', false),
     ];
+
+    const projectVerification = [];
+    if (options.verify !== false) {
+      for (const step of BOOTSTRAP_PROJECT_COMMANDS) {
+        projectVerification.push(runProjectCommand(assembled.outDir, step));
+      }
+    }
+
     const doctor = await doctorUpstreams(assembled.outDir, {
       profile: options.upstreamProfile ?? 'lifecycle',
     });
@@ -77,6 +109,7 @@ export async function bootstrapProject(contractDir, outDir, options = {}) {
       upstreams,
       integrations,
       manualIntegrations,
+      projectVerification,
       agent,
       doctor,
     };
