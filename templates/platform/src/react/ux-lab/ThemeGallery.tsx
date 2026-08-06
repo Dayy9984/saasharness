@@ -5,14 +5,14 @@ export function ThemeGallery() {
   return (
     <main className="ux-shell">
       <header className="ux-heading">
-        <p className="ux-eyebrow">Stage 2 · Theme exploration</p>
-        <h1>15 materially different directions</h1>
+        <p className="ux-eyebrow">Stage 2 · UI treatment comparison</p>
+        <h1>15 clean B2C SaaS variants</h1>
         <p>
-          Every card renders the same neutral screen. Compare hierarchy, typography, shape, density, texture, and motion intent—not product data.
+          Every candidate keeps the same conventional IA, hierarchy, content, and interaction model. Compare only useful product-design choices such as button material, surface depth, density, radius, focus, accent, and motion intent.
         </p>
         <a className="ux-back-link" href="/__ux">← Design workflow</a>
       </header>
-      <section className="theme-grid" aria-label="Design theme candidates">
+      <section className="theme-grid" aria-label="B2C SaaS UI treatment candidates">
         {themes.map((theme, index) => (
           <article className="theme-card" key={theme.id} data-theme-id={theme.id}>
             <div className="theme-card__meta">
@@ -24,7 +24,7 @@ export function ThemeGallery() {
             </div>
             <ThemeFrame theme={theme} compact />
             <div className="theme-card__footer">
-              <span>{theme.fontMood}</span>
+              <span>{theme.buttonTreatment}</span>
               <span>{theme.density}</span>
               <a href={`/__ux/themes/${theme.id}`}>Open full preview</a>
             </div>
