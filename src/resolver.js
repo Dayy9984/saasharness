@@ -84,9 +84,14 @@ export function resolvePlan(contracts) {
   if (modules.has('storage')) cloudflare.push('r2');
   if (modules.has('realtime')) cloudflare.push('durable-objects');
 
-  const warnings = [];
+  const warnings = [
+    { severity: 'blocker', code: 'MODULE_PACK_NOT_HARDENED', message: 'v0.1 module boundaries are starter contracts and must be hardened before production' },
+  ];
   if (adapters.identity.some((adapter) => adapter.status !== 'production')) {
-    warnings.push({ severity: 'warning', code: 'IDENTITY_CONTRACT_ONLY', message: 'identity adapters are contract stubs in v0.1 and require real provider integration' });
+    warnings.push({ severity: 'blocker', code: 'IDENTITY_CONTRACT_ONLY', message: 'identity adapters are contract stubs in v0.1 and require real provider integration' });
+  }
+  if (adapters.database.status !== 'production') {
+    warnings.push({ severity: 'blocker', code: 'DATABASE_PROFILE_NOT_HARDENED', message: 'the selected database profile is a starter boundary and requires integration, migration, and recovery validation' });
   }
   if (monetized && adapters.payment.status !== 'production') {
     warnings.push({ severity: 'blocker', code: 'PAYMENT_ADAPTER_UNRESOLVED', message: 'select and validate a live market payment adapter before production' });
