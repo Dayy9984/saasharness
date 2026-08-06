@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadContracts, validateContracts } from './contracts.js';
-import { prepareOutput, writeFiles, copyDirectory, copyFile } from './fs-utils.js';
+import { prepareOutput, writeFiles, copyDirectory, copyFile, exists } from './fs-utils.js';
 import { resolvePlan } from './resolver.js';
 import { starterFiles } from './starter-files.js';
 import { platformConfigFiles } from './platform-config.js';
@@ -21,6 +21,13 @@ export async function buildPlan(contractDir, options = {}) {
 export async function assembleProject(contractDir, outDir, options = {}) {
   const { contracts, validation, plan } = await buildPlan(contractDir, options);
   await prepareOutput(outDir, options.force ?? false);
+
+  if (options.baseTemplateDir) {
+    const baseTemplateDir = path.resolve(options.baseTemplateDir);
+    if (!await exists(baseTemplateDir)) throw new Error(`upstream base template not found: ${baseTemplateDir}`);
+    await copyDirectory(baseTemplateDir, outDir);
+  }
+
   const raw = {
     product: contracts.product.raw,
     ux: contracts.ux.raw,
@@ -34,5 +41,10 @@ export async function assembleProject(contractDir, outDir, options = {}) {
   await copyDirectory(path.join(packageRoot, 'integrations'), path.join(outDir, '.saasharness', 'upstreams'));
   await copyFile(path.join(packageRoot, 'upstreams.lock.json'), path.join(outDir, '.saasharness', 'upstreams.lock.json'));
 
-  return { outDir: path.resolve(outDir), validation, plan };
+  return {
+    outDir: path.resolve(outDir),
+    validation,
+    plan,
+    baseTemplateDir: options.baseTemplateDir ? path.resolve(options.baseTemplateDir) : null,
+  };
 }
