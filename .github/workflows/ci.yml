@@ -75,12 +75,12 @@ jobs:
       - run: npm ci
       - name: Assemble the approved Tetris pilot
         run: node ./bin/saasharness.js assemble ./examples/tetris --out ./.tmp/tetris
-      - name: Verify design workflow and approve one of fifteen themes
+      - name: Apply deterministic playable pilot fixture and traceable public references
+        run: node ./test/fixtures/apply-tetris-pilot.mjs ./.tmp/tetris
+      - name: Verify design workflow and explicitly approve one of fifteen themes for the pilot
         run: |
           node ./bin/saasharness.js design status ./.tmp/tetris
-          node ./bin/saasharness.js design select-theme ./.tmp/tetris neon-arcade --by ci-human
-      - name: Apply deterministic playable pilot fixture
-        run: node ./test/fixtures/apply-tetris-pilot.mjs ./.tmp/tetris
+          node ./bin/saasharness.js design select-theme ./.tmp/tetris neon-arcade --by ci-human --pilot
       - run: npm install
         working-directory: ./.tmp/tetris
       - run: npm audit --omit=dev --audit-level=high
