@@ -3,22 +3,6 @@ import themes from './theme-catalog.json';
 
 type Theme = (typeof themes)[number];
 
-const blocks = [
-  [0, 1], [1, 1], [2, 1], [2, 0],
-  [4, 0], [4, 1], [5, 1], [5, 2],
-  [1, 3], [2, 3], [2, 4], [3, 4],
-];
-
-function BlockField() {
-  return (
-    <div className="theme-block-field" aria-hidden="true">
-      {blocks.map(([x, y], index) => (
-        <span key={`${x}-${y}-${index}`} style={{ gridColumn: x + 1, gridRow: y + 1 }} />
-      ))}
-    </div>
-  );
-}
-
 export function ThemeFrame({ theme, compact = false }: { theme: Theme; compact?: boolean }) {
   const style = {
     '--theme-bg': theme.background,
@@ -30,6 +14,12 @@ export function ThemeFrame({ theme, compact = false }: { theme: Theme; compact?:
     '--theme-border': theme.border,
     '--theme-radius': theme.radius,
     '--theme-shadow': theme.shadow,
+    '--theme-button-bg': theme.buttonBg,
+    '--theme-button-text': theme.buttonText,
+    '--theme-button-border': theme.buttonBorder,
+    '--theme-button-shadow': theme.buttonShadow,
+    '--theme-panel-backdrop': theme.panelBackdrop,
+    '--theme-panel-blur': theme.panelBlur,
   } as CSSProperties;
 
   return (
@@ -37,29 +27,53 @@ export function ThemeFrame({ theme, compact = false }: { theme: Theme; compact?:
       className={`theme-frame theme-frame--${theme.id} ${compact ? 'theme-frame--compact' : ''}`}
       data-theme-system={theme.id}
       style={style}
-      aria-label={`${theme.name} design preview`}
+      aria-label={`${theme.name} UI treatment preview`}
     >
-      <header className="theme-frame__header">
+      <header className="theme-frame__topbar">
         <span className="theme-frame__brand">PRODUCT</span>
-        <span className="theme-frame__status">DESIGN ONLY</span>
+        <div className="theme-frame__top-actions" aria-hidden="true">
+          <span className="theme-frame__search">Search</span>
+          <span className="theme-frame__avatar" />
+        </div>
       </header>
       <div className="theme-frame__body">
         <aside className="theme-frame__rail" aria-hidden="true">
           <span className="is-active" />
           <span />
           <span />
+          <span />
         </aside>
         <div className="theme-frame__content">
-          <div className="theme-frame__copy">
-            <p className="theme-frame__kicker">CANONICAL SCREEN</p>
-            <h2>Primary product promise</h2>
-            <p>Neutral labels keep all fifteen candidates comparable. No real mock data is used in this phase.</p>
+          <header className="theme-frame__pagehead">
+            <div className="theme-frame__copy">
+              <p className="theme-frame__kicker">WORKSPACE</p>
+              <h2>Primary product value</h2>
+              <p>The IA and content stay fixed. Only practical component treatment, density, surfaces, controls, and motion intent change.</p>
+            </div>
             <div className="theme-frame__actions" aria-hidden="true">
-              <span>PRIMARY ACTION</span>
+              <span className="is-primary">PRIMARY ACTION</span>
               <span>SECONDARY</span>
             </div>
-          </div>
-          <BlockField />
+          </header>
+          <section className="theme-frame__metrics" aria-hidden="true">
+            <article><small>ACTIVATION</small><strong>72%</strong><span>+8.4%</span></article>
+            <article><small>ACTIVE USERS</small><strong>1,248</strong><span>today</span></article>
+            <article><small>RESPONSE</small><strong>184 ms</strong><span>p75</span></article>
+          </section>
+          <section className="theme-frame__workspace" aria-hidden="true">
+            <article className="theme-frame__list">
+              <header><strong>Recent activity</strong><span>View all</span></header>
+              <div className="theme-frame__row"><i /><span /><b /></div>
+              <div className="theme-frame__row"><i /><span /><b /></div>
+              <div className="theme-frame__row"><i /><span /><b /></div>
+            </article>
+            <article className="theme-frame__summary">
+              <small>NEXT STEP</small>
+              <strong>Complete the first-value flow</strong>
+              <p>One clear action, one recovery path, no decorative detour.</p>
+              <span>CONTINUE</span>
+            </article>
+          </section>
         </div>
       </div>
     </section>
