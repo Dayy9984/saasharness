@@ -19,31 +19,42 @@ async function workspace() {
   return dir;
 }
 
+async function passStage(dir, stage, channels) {
+  await createCriticPacket(dir, stage);
+  for (const channel of channels) {
+    const reportPath = path.join(dir, `${stage}-${channel}.json`);
+    await writeFile(reportPath, JSON.stringify({
+      stage,
+      channel,
+      round: 1,
+      method: channel === 'browser-evidence' ? 'browser' : 'independent',
+      verdict: 'pass',
+      findings: [],
+    }));
+    await recordCriticReport(dir, stage, channel, reportPath);
+  }
+  return evaluateStage(dir, stage);
+}
+
 test('every stage requires critic channels before approval', async () => {
   const dir = await workspace();
   await createCriticPacket(dir, 'discovery');
   await assert.rejects(() => approveStage(dir, 'discovery', 'owner'), /critic decision is pass/);
 });
 
-test('discovery can pass after both independent reports', async () => {
+test('discovery advances to design philosophy, not directly to implementation UX', async () => {
   const dir = await workspace();
-  await createCriticPacket(dir, 'discovery');
-  for (const channel of ['intent', 'requirements']) {
-    const reportPath = path.join(dir, `${channel}.json`);
-    await writeFile(reportPath, JSON.stringify({
-      stage: 'discovery',
-      channel,
-      round: 1,
-      method: 'independent',
-      verdict: 'pass',
-      findings: [],
-    }));
-    await recordCriticReport(dir, 'discovery', channel, reportPath);
-  }
-  const summary = await evaluateStage(dir, 'discovery');
+  const summary = await passStage(dir, 'discovery', ['intent', 'requirements']);
   assert.equal(summary.decision, 'pass');
   const approval = await approveStage(dir, 'discovery', 'owner');
-  assert.equal(approval.nextStage, 'ux-ia');
+  assert.equal(approval.nextStage, 'ux-philosophy');
+});
+
+test('design philosophy cannot be approved without SOUL.md', async () => {
+  const dir = await workspace();
   const state = JSON.parse(await readFile(path.join(dir, '.saasharness', 'workflow.json'), 'utf8'));
-  assert.equal(state.stages.discovery.status, 'approved');
+  state.currentStage = 'ux-philosophy';
+  await writeFile(path.join(dir, '.saasharness', 'workflow.json'), JSON.stringify(state, null, 2));
+  await passStage(dir, 'ux-philosophy', ['product-fit', 'design-coherence']);
+  await assert.rejects(() => approveStage(dir, 'ux-philosophy', 'owner'), /SOUL\.md/);
 });
