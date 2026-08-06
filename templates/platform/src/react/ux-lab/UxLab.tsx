@@ -4,6 +4,7 @@ import { ThemePreview } from './ThemePreview';
 import { approvedThemeId } from './theme-selection';
 import themes from './theme-catalog.json';
 import './ux-lab.css';
+import './theme-structures.css';
 
 function WorkflowHome() {
   return (
