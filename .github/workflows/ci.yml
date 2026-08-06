@@ -61,3 +61,35 @@ jobs:
           --execute
       - name: Verify exact upstream commits and sentinels
         run: node ./bin/saasharness.js upstreams doctor ./.tmp/upstream-demo --profile core
+
+  tetris-pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: check
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Assemble the approved Tetris pilot
+        run: node ./bin/saasharness.js assemble ./examples/tetris --out ./.tmp/tetris
+      - name: Verify design workflow and approve one of fifteen themes
+        run: |
+          node ./bin/saasharness.js design status ./.tmp/tetris
+          node ./bin/saasharness.js design select-theme ./.tmp/tetris neon-arcade --by ci-human
+      - name: Apply deterministic playable pilot fixture
+        run: node ./test/fixtures/apply-tetris-pilot.mjs ./.tmp/tetris
+      - run: npm install
+        working-directory: ./.tmp/tetris
+      - run: npm audit --omit=dev --audit-level=high
+        working-directory: ./.tmp/tetris
+      - run: npm run check
+        working-directory: ./.tmp/tetris
+      - run: npm test
+        working-directory: ./.tmp/tetris
+      - run: npx playwright install --with-deps chromium
+        working-directory: ./.tmp/tetris
+      - run: npm run test:e2e
+        working-directory: ./.tmp/tetris
