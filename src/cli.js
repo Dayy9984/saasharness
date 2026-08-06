@@ -42,9 +42,10 @@ async function initContracts(directory, name) {
   const targetName = name ?? path.basename(path.resolve(directory)).replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase();
   const templateDir = path.join(packageRoot, 'templates/contracts');
   for (const fileName of ['product.yml', 'ux.yml', 'feature.yml']) {
+    const sourceName = fileName === 'ux.yml' ? 'ux-v3.yml' : fileName;
     const target = path.join(directory, fileName);
     if (await exists(target)) throw new Error(`refusing to overwrite ${target}`);
-    let content = await readUtf8(path.join(templateDir, fileName));
+    let content = await readUtf8(path.join(templateDir, sourceName));
     content = content.replaceAll('__PRODUCT_NAME__', targetName);
     await writeUtf8(target, content);
   }
