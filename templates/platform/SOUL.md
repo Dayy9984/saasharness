@@ -1,83 +1,65 @@
-# Product Design Soul
+# SOUL.md · B2C UI Foundation
 
-> Canonical design-philosophy contract. Every screen, component, illustration, motion token, empty state, and piece of interface copy must be explainable through this file. Discuss it with the product owner before generating themes.
+> A short, human-approved UI contract. The default is a clean, highly legible, conventional B2C SaaS experience. Use this file to choose practical treatment details—not to invent an artistic theme or change the approved IA.
 
 status: draft
 
-## 1. Product essence
+## 1. Non-negotiable foundation
 
-- What change should the user feel after using the product?
-- What emotional promise must the interface keep?
-- What should never be sacrificed for visual novelty?
+Every screen must prioritize:
 
-## 2. Audience and context
+- obvious next action and predictable navigation;
+- strong text and control visibility;
+- low cognitive load and plain-language recovery;
+- familiar B2C patterns for sign-in, onboarding, upgrade, billing, account, and support;
+- accessible contrast, focus, keyboard behavior, and reduced motion;
+- responsive behavior completed in the React mock before production implementation;
+- consistent components instead of page-specific decoration.
 
-- Primary audience:
-- Usage context:
+Visual novelty may never weaken comprehension, trust, speed, or accessibility.
+
+## 2. Product-specific decisions
+
+Discuss only the choices that materially affect this product.
+
+- Product character in 3–5 words:
+- Desired warmth: neutral / warm / friendly / premium
+- Information density: relaxed / standard / compact
+- Surface treatment: flat / soft card / selected glass controls
+- Button treatment: solid / subtle glass / low-emphasis neutral
+- Accent role:
+- Motion character: instant / snappy / smooth / gentle
 - Trust sensitivity:
-- Accessibility needs:
-- Cultural and regional considerations:
+- Regional or cultural considerations:
 
-## 3. Design principles
+## 3. Reference principles
 
-Choose 3–5 principles. Each principle must include a positive rule, a negative rule, and a concrete component example.
+References are used for principles, not imitation.
 
-### Principle 1
+- Apple: clarity, restrained material depth, natural spring response
+- Linear: compact speed and disciplined hierarchy
+- Miro: visible collaborative affordances and friendly grouping
+- Stripe: payment trust, explicit status, and confident recovery
+- Notion: quiet chrome and content readability
 
-- We are:
-- We are not:
-- Component implication:
+Add product-specific public references and note exactly what to learn. Do not copy brand assets, protected layouts, or distinctive identity.
 
-### Principle 2
+| Reference URL or description | Principle to learn | What not to copy |
+|---|---|---|
+| | | |
 
-- We are:
-- We are not:
-- Component implication:
+## 4. Component rules
 
-### Principle 3
+Every reusable component must:
 
-- We are:
-- We are not:
-- Component implication:
+1. inherit semantic color, type, spacing, radius, surface, and motion tokens from this contract;
+2. expose applicable default, hover, pressed, focus, disabled, loading, success, and error behavior;
+3. preserve the approved IA and user flow;
+4. keep touch targets and keyboard operation usable;
+5. avoid decorative glass, bounce, gradients, and shadows unless they communicate hierarchy or interaction;
+6. record any deliberate exception in the page or feature contract.
 
-## 4. Visual grammar
-
-- Typography posture:
-- Color posture:
-- Shape and radius language:
-- Density and whitespace:
-- Surface, border, and elevation:
-- Icon and illustration language:
-- Image treatment:
-
-## 5. Interaction and motion philosophy
-
-- Immediate feedback:
-- Spring behavior:
-- Spatial continuity:
-- Interruption and retargeting:
-- Loading and latency disclosure:
-- Reduced-motion fallback:
-- Decorative motion that is forbidden:
-
-## 6. References and anti-references
-
-| Type | URL or description | What to learn | What not to copy |
-|---|---|---|---|
-| reference | | | |
-| anti-reference | | | |
-
-## 7. Component constitution
-
-Every component must:
-
-1. use semantic tokens derived from this SOUL;
-2. expose loading, disabled, error, focus, and reduced-motion behavior when applicable;
-3. preserve the approved hierarchy and interaction mental model;
-4. avoid one-off styling that contradicts the system;
-5. state any deliberate exception in the page-level design contract.
-
-## 8. Approval
+## 5. Approval
 
 - Product owner:
 - Critic decision:
