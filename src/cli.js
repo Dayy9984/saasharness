@@ -22,7 +22,7 @@ import { runStageLoop } from './orchestrator.js';
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-const HELP = `SaaS Harness v0.5\n\nUsage:\n  saasharness init <directory> [--name <slug>]\n  saasharness validate <contract-directory>\n  saasharness plan <contract-directory> [--prototype]\n  saasharness assemble <contract-directory> --out <directory> [--force] [--prototype]\n  saasharness bootstrap <contract-directory> --out <directory> [--provider <provider>] [--profile <core|lifecycle|all>] [--force] [--prototype] --execute\n  saasharness risk <changed-path> [more paths...]\n\n  saasharness design status <project-directory>\n  saasharness design list-themes <project-directory>\n  saasharness design select-theme <project-directory> <theme-id> --by <human>\n\n  saasharness upstreams sync <project-directory> [--profile <core|lifecycle|all>] [--name <upstream>] [--execute]\n  saasharness upstreams doctor <project-directory> [--profile <core|lifecycle|all>] [--name <upstream>]\n  saasharness upstreams install <project-directory> <name> [--provider <provider>] [--execute]\n\n  saasharness agent init <project-directory> [--provider <provider>] [--force]\n  saasharness run <project-directory> [--stage <stage>] [--agent-config <file>] [--execute]\n\n  saasharness workflow status <project-directory>\n  saasharness workflow packet <project-directory> <stage>\n  saasharness workflow record <project-directory> <stage> <channel> --report <report.json>\n  saasharness workflow evaluate <project-directory> <stage>\n  saasharness workflow revise <project-directory> <stage>\n  saasharness workflow approve <project-directory> <stage> --by <human>\n\n  saasharness integrations list\n  saasharness integrations install <name> [--provider <provider>] [--project <directory>] [--execute]\n`;
+const HELP = `SaaS Harness v0.5\n\nUsage:\n  saasharness init <directory> [--name <slug>]\n  saasharness validate <contract-directory>\n  saasharness plan <contract-directory> [--prototype]\n  saasharness assemble <contract-directory> --out <directory> [--force] [--prototype]\n  saasharness bootstrap <contract-directory> --out <directory> [--provider <provider>] [--profile <core|lifecycle|all>] [--force] [--prototype] --execute\n  saasharness risk <changed-path> [more paths...]\n\n  saasharness design status <project-directory>\n  saasharness design list-themes <project-directory>\n  saasharness design select-theme <project-directory> <theme-id> --by <human> [--pilot]\n\n  saasharness upstreams sync <project-directory> [--profile <core|lifecycle|all>] [--name <upstream>] [--execute]\n  saasharness upstreams doctor <project-directory> [--profile <core|lifecycle|all>] [--name <upstream>]\n  saasharness upstreams install <project-directory> <name> [--provider <provider>] [--execute]\n\n  saasharness agent init <project-directory> [--provider <provider>] [--force]\n  saasharness run <project-directory> [--stage <stage>] [--agent-config <file>] [--execute]\n\n  saasharness workflow status <project-directory>\n  saasharness workflow packet <project-directory> <stage>\n  saasharness workflow record <project-directory> <stage> <channel> --report <report.json>\n  saasharness workflow evaluate <project-directory> <stage>\n  saasharness workflow revise <project-directory> <stage>\n  saasharness workflow approve <project-directory> <stage> --by <human>\n\n  saasharness integrations list\n  saasharness integrations install <name> [--provider <provider>] [--project <directory>] [--execute]\n`;
 
 function option(args, name) {
   const index = args.indexOf(name);
@@ -107,7 +107,12 @@ async function runDesign(rest) {
   }
   if (action === 'select-theme') {
     if (!themeId) throw new Error('design select-theme requires <project-directory> <theme-id> --by <human>');
-    console.log(JSON.stringify(await selectTheme(projectDir, themeId, option(rest, '--by')), null, 2));
+    console.log(JSON.stringify(await selectTheme(
+      projectDir,
+      themeId,
+      option(rest, '--by'),
+      { pilot: rest.includes('--pilot') },
+    ), null, 2));
     return;
   }
   throw new Error(`unknown design action: ${action ?? '<missing>'}`);
