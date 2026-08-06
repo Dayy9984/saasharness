@@ -16,7 +16,13 @@ export function pinnedIntegrationPlan(name, projectDir = '.', provider = 'codex'
       name,
       source,
       steps: [
-        ['uvx', ['--from', source, 'specify', 'init', '.', '--integration', provider]],
+        ['uvx', [
+          '--from', source,
+          'specify', 'init', '.',
+          '--integration', provider,
+          '--force',
+          '--ignore-agent-tools',
+        ]],
         ['uvx', ['--from', source, 'specify', 'preset', 'add', '--dev', preset]],
       ],
     };
