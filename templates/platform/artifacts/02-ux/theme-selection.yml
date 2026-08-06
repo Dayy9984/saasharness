@@ -1,0 +1,8 @@
+version: 1
+status: draft
+theme_id: ""
+theme_name: ""
+approved_by: ""
+approved_at: ""
+soul: SOUL.md
+catalog: src/react/ux-lab/theme-catalog.json
