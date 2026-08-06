@@ -93,3 +93,11 @@ jobs:
         working-directory: ./.tmp/tetris
       - run: npm run test:e2e
         working-directory: ./.tmp/tetris
+      - name: Upload theme and Tetris browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tetris-design-evidence
+          path: ./.tmp/tetris/artifacts/*.png
+          if-no-files-found: warn
+          retention-days: 14
