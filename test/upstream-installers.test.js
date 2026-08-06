@@ -8,10 +8,15 @@ test('Spec Kit and Impeccable installers execute from pinned local checkouts', (
   const specKit = pinnedIntegrationPlan('spec-kit', root, 'codex');
   assert.equal(specKit.steps[0][1][1], path.join(root, '.saasharness', 'sources', 'spec-kit'));
   assert.equal(specKit.steps[0][1].includes('github.com'), false);
+  assert.ok(specKit.steps[0][1].includes('--force'));
+  assert.ok(specKit.steps[0][1].includes('--ignore-agent-tools'));
 
+  const source = path.join(root, '.saasharness', 'sources', 'impeccable');
   const impeccable = pinnedIntegrationPlan('impeccable', root, 'codex');
-  assert.equal(impeccable.steps[0][0], 'npm');
-  assert.ok(impeccable.steps[0][1].includes(`file:${path.join(root, '.saasharness', 'sources', 'impeccable')}`));
+  assert.deepEqual(impeccable.steps[0], ['npm', ['--prefix', source, 'install', '--omit=dev']]);
+  assert.equal(impeccable.steps[1][0], 'node');
+  assert.equal(impeccable.steps[1][1][0], path.join(source, 'cli', 'bin', 'cli.js'));
+  assert.ok(impeccable.steps[1][1].includes('--providers=codex'));
 });
 
 test('Open Design installer uses the checked-out daemon entrypoint', () => {
