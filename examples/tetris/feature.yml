@@ -1,0 +1,8 @@
+version: 1
+id: feature-falling-blocks
+name: Play a simple falling-block game
+touches: [ui, state]
+acceptance: [board-renders, controls-move-piece, rotate-works, drop-works, restart-works]
+approval:
+  status: approved
+  approved_by: tetris-pilot
