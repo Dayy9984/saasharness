@@ -5,49 +5,43 @@ description: Orchestrate the complete B2C SaaS workflow from product interview t
 
 # B2C SaaS Workflow
 
-Use this skill as the default entry point for a SaaS Harness project.
-
 ## Canonical flow
 
 1. Product discovery and policy interview
-2. PRD critique and human approval
-3. IA, user journeys, screen contracts, design system, and running React mock
-4. UX/design/browser critique loop and human approval
+2. Spec Kit PRD/spec critique and human approval
+3. IA, journeys, screen contracts, design system, and running React mock
+4. Open Design/Pro UI candidate generation, Impeccable/browser critics, human UX approval
 5. Architecture, module graph, folder structure, DB/cache/infra/latency plan
 6. Architecture critique and human approval
 7. Feature phases and tasks
 8. Plan critique and human approval
 9. One releaseable feature slice at a time
-10. Risk-adaptive TDD or scenario-first implementation
+10. Superpowers-style TDD or scenario-first implementation
 11. Spec/code/runtime critic loop
 12. Preview, staging, release evidence, release critic, human production approval
+13. OpenSpec living changes after the approved baseline
 
-The workflow state in `.saasharness/workflow.json` is authoritative. Never skip a stage or mark it approved without the required critic channels.
+`.saasharness/workflow.json` is authoritative. Do not run overlapping upstream state machines as independent authorities.
+
+## Upstream responsibility
+
+- Spec Kit: initial artifact grammar and agent adapters.
+- Superpowers: normal small-batch TDD/debug/review.
+- Open Design: running design artifact engine.
+- Pro UI Engineering: bundled candidate visual systems and spring physics.
+- Impeccable: required independent UI critique and hardening.
+- OpenSpec: post-baseline change deltas.
+- GSD Core: optional fresh-context recovery for unusually long phases.
+- Open SaaS + AI SaaS Starter: completeness coverage and money-path safety.
+- Strands Harness SDK: optional only when the product itself is agentic.
+- Meta-Harness/Hermes: isolated research lab after pilots.
 
 ## Critic-first rule
 
-Every stage has at least two independent critic channels. Critics must not see one another's findings before synthesis. UX critics must inspect a running React mock or preview; code alone is not acceptable UX evidence.
+Every stage has independent critic channels. UX critics inspect a running React mock or Preview; code alone is not acceptable evidence.
 
-Use:
+## WIP and escalation
 
-```bash
-saasharness workflow status .
-saasharness workflow packet . <stage>
-saasharness workflow record . <stage> <channel> --report <report.json>
-saasharness workflow evaluate . <stage>
-saasharness workflow revise . <stage>
-saasharness workflow approve . <stage> --by "<human>"
-```
+Product-feature WIP is 1. Independent evidence may run in parallel, but coupled UI/state/data work has one implementation owner.
 
-## WIP limit
-
-Only one product feature slice may be in implementation at a time. Independent evidence collection may run in parallel, but coupled UI/state/data work has one implementation owner.
-
-## Escalation
-
-Stop and return to the human when:
-- a product policy, IA, pricing, privacy, or payment decision changes;
-- P0/P1 findings remain after the configured maximum rounds;
-- critics disagree on the objective or required behavior;
-- a provider/module is not production-ready;
-- production release is requested.
+Stop and return to the human when product policy, IA, pricing, privacy, or payment changes; P0/P1 findings remain after maximum rounds; critics dispute the objective; a module is not production-ready; or production release is requested.

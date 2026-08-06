@@ -1,58 +1,59 @@
 # SaaS Harness
 
-An **upstream-composed**, human-in-the-loop B2C SaaS workflow, mandatory critic system, and React Web + Cloudflare-first starter assembler.
+An **upstream-composed**, human-in-the-loop B2C SaaS workflow, mandatory critic system, and React Web + Cloudflare-first product assembler.
 
-SaaS Harness does not aim to replace mature agent frameworks with an original all-in-one methodology. It assigns one upstream to each major responsibility and keeps custom code focused on B2C product policy, regional adapters, Cloudflare assembly, critic evidence, and source-attributed product modules.
+SaaS Harness does not replace mature frameworks with an original all-in-one methodology. It assigns one bounded responsibility to each upstream and keeps custom code focused on B2C product policy, regional adapters, Cloudflare assembly, critic evidence, and attributed product modules.
 
 ## Target outcome
 
 ```text
 product interview
-→ GitHub Spec Kit: constitution / clarify / spec / plan / tasks
-→ Open Design + React UX Lab: IA / journeys / running React mock
-→ human UX approval
-→ Impeccable + mandatory independent critics
-→ Starter and versioned B2C module assembly
+→ Spec Kit: constitution / clarify / spec / plan / tasks
+→ Open Design + React UX Lab + Pro UI references
+→ UX/design/browser critics + human approval
+→ reusable B2C platform assembly
 → Superpowers: WIP=1 TDD / debugging / review
-→ actual identity / payment / credits / Admin integration
-→ OpenSpec living changes after baseline
+→ identity / payment / credits / Admin / privacy
 → Preview → Staging → Production
-→ optional Meta-Harness outer-loop improvement after pilots
+→ OpenSpec living changes after baseline
+→ optional GSD recovery or agent-runtime/research layers when justified
 ```
 
-## Canonical upstreams
+## Upstream responsibility map
 
-The pinned source of truth is [`upstreams.lock.json`](upstreams.lock.json).
+The machine-readable source of truth is [`upstreams.lock.json`](upstreams.lock.json).
 
-| Layer | Canonical upstream | Status |
+| Responsibility | Upstream | Activation |
 |---|---|---|
-| initial specification | [`github/spec-kit`](https://github.com/github/spec-kit) | **required**; official CLI plus the included [`saasharness-b2c` preset](integrations/spec-kit-b2c/) |
-| implementation and TDD | [`obra/superpowers`](https://github.com/obra/superpowers) | **required** provider plugin |
-| design artifact engine | [`nexu-io/open-design`](https://github.com/nexu-io/open-design) | default external daemon/MCP; React UX Lab fallback |
-| UI critique and hardening | [`pbakaus/impeccable`](https://github.com/pbakaus/impeccable) | **required**, pinned project install |
-| living change management | [`Fission-AI/OpenSpec`](https://github.com/Fission-AI/OpenSpec) | enabled after the first approved baseline |
-| long-horizon context | [`open-gsd/gsd-core`](https://github.com/open-gsd/gsd-core) | optional escape path, not always-on |
-| money-path source port | [`nikandr-surkov/ai-saas-starter`](https://github.com/nikandr-surkov/ai-saas-starter) | ledger / idempotency / replay / race patterns, with attribution |
-| SaaS capability inventory | [`wasp-lang/open-saas`](https://github.com/wasp-lang/open-saas) | reference profile; Wasp is not the default runtime |
-| harness optimization | [`stanford-iris-lab/meta-harness`](https://github.com/stanford-iris-lab/meta-harness) | disabled research outer loop until stable pilots/evals exist |
-| memory / skill candidates | [`NousResearch/hermes-agent`](https://github.com/NousResearch/hermes-agent) | optional Meta-Harness proposer/backend; no production self-promotion |
-| runtime baseline | [`cloudflare/templates`](https://github.com/cloudflare/templates) | React + Vite + Hono + Workers compatibility source |
+| initial specification | `github/spec-kit` | required official CLI + included B2C preset |
+| implementation/TDD | `obra/superpowers` | required provider plugin |
+| running design artifacts | `nexu-io/open-design` | default external MCP/daemon; React UX Lab fallback |
+| UI engineering references | `yzfly/pro-ui-engineering-skill` | attributed curated subset bundled in every generated project |
+| UI critique/hardening | `pbakaus/impeccable` | required pinned project install |
+| optional design search | UI UX Pro Max | manual license review before external install |
+| living changes | `Fission-AI/OpenSpec` | after first approved baseline |
+| long-context recovery | `open-gsd/gsd-core` | only when normal small-batch flow is insufficient |
+| money-path safety | `nikandr-surkov/ai-saas-starter` | attributed ledger/idempotency/single-writer pattern port |
+| B2C capability coverage | `wasp-lang/open-saas` | reference profile; Wasp runtime is not copied |
+| product agent runtime | `strands-agents/harness-sdk` | only when the generated SaaS itself is agentic |
+| harness research | Meta-Harness + Hermes | isolated after real pilots and sealed evaluation exist |
+| React/Workers baseline | `cloudflare/templates` | required compatibility source + independent audit |
+| previous Agent Startup Kit candidate | `Blink-h/agent-startup-kit` | not integrated because the primary repository is unavailable/404 |
 
-See [Upstream-Composed Architecture](docs/upstream-architecture.md) for the responsibility boundaries and what custom code is still justified.
+See [`docs/upstream-architecture.md`](docs/upstream-architecture.md) and [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 
 ## Core principles
 
-- **Human-owned intent:** product, market, price, entitlement, privacy, and UX decisions are approved by a person.
-- **Mandatory critic:** every product, UX, architecture, plan, implementation, and release stage has independent critique.
-- **Actual UX evidence:** UI/UX cannot pass from code review alone; critics need a running React mock or Preview.
-- **Upstream before invention:** a mature upstream owns each generic workflow. A similar custom implementation does not count as integration.
-- **WIP=1:** finish one observable feature slice before the next.
-- **Risk-adaptive TDD:** Superpowers RED–GREEN–REFACTOR for production behavior; scenario-first for complete journeys.
-- **Thin project layer, reusable platform code:** common SaaS concerns live in versioned modules rather than being improvised for every product.
-- **React Web + Cloudflare-first:** with explicit database/backend escape conditions.
-- **Region adapters:** Kakao-oriented KR identity, Google-oriented global identity, and market-specific payment adapters.
-- **No Redis by default.**
-- **Self-improvement is bounded:** Meta-Harness and Hermes may propose candidates only after stable held-out evaluation exists.
+- Humans approve product, market, price, entitlement, privacy, documents, and React UX.
+- Critics run at every product/UX/architecture/plan/implementation/release stage.
+- UX cannot pass from code review alone; a running React artifact is required.
+- Product-feature WIP is 1.
+- Superpowers-style RED–GREEN–REFACTOR covers production behavior; complete journeys are scenario-first.
+- Common SaaS infrastructure lives in versioned modules rather than being improvised per feature.
+- React Web + Cloudflare are defaults, with explicit database/backend escape criteria.
+- KR identity defaults to Kakao, global identity to Google; payments remain market adapters.
+- Redis is not a default.
+- Overlapping upstream state machines are not all run simultaneously.
 
 ## Quick start
 
@@ -61,56 +62,39 @@ npm install
 node ./bin/saasharness.js init ./contracts --name my-saas
 # Complete the product interview and approve product.yml.
 node ./bin/saasharness.js assemble ./contracts --out ./generated/my-saas --prototype
+cd ./generated/my-saas
+npm install
+npm run dev
 ```
 
-The generated project includes:
+Open `/__ux`. The generated project receives:
 
-- the pinned upstream manifest;
-- the actual Spec Kit B2C preset under `.saasharness/upstreams/spec-kit-b2c`;
-- B2C critic and workflow skills;
-- React UX Lab, artifacts, and Cloudflare starter modules.
+- the Spec Kit B2C preset and pinned upstream lock;
+- B2C product, UX, architecture, TDD, critic, release, living-change, context-recovery, platform, and optional agent-runtime skills;
+- the attributed Pro UI Engineering subset;
+- React UX Lab, planning artifacts, Cloudflare runtime modules, tests, and release workflows.
 
-Install/verify the canonical upstreams in the generated project:
+Install/verify external upstreams:
 
 ```bash
-cd generated/my-saas
 saasharness integrations list
-
-# Runs Spec Kit init and installs the included B2C preset when uv/uvx is available.
 saasharness integrations install spec-kit --provider codex --project . --execute
-
-# Installs the pinned Impeccable critic.
 saasharness integrations install impeccable --provider codex --project . --execute
-
-# Superpowers and Open Design use their official provider/plugin or daemon/MCP setup.
 saasharness integrations install superpowers --provider codex --project .
 saasharness integrations install open-design --provider codex --project .
 ```
 
-Open the React UX Lab at `/__ux`, create and critique the IA/UX, then approve `ux.yml` and `feature.yml`:
+OpenSpec is installed after the first baseline. GSD is an escape hatch. Strands is installed only for agentic products. Pro UI Engineering is already bundled and requires no install.
+
+## Mandatory critic workflow
 
 ```bash
-node ./bin/saasharness.js validate ./contracts
-node ./bin/saasharness.js plan ./contracts
-```
-
-## Mandatory stage workflow
-
-```bash
-cd generated/my-saas
-
 saasharness workflow status .
 saasharness workflow packet . discovery
-
-# Independent critic reports.
 saasharness workflow record . discovery intent --report ./intent.json
 saasharness workflow record . discovery requirements --report ./requirements.json
 saasharness workflow evaluate . discovery
-
-# Revise and re-run when needed.
 saasharness workflow revise . discovery
-
-# Human approval after PASS.
 saasharness workflow approve . discovery --by "product-owner"
 ```
 
@@ -120,47 +104,28 @@ Stages:
 discovery → ux-ia → architecture → plan → implementation → release
 ```
 
-After the first product baseline, use OpenSpec for subsequent proposals and archived changes rather than creating a second living-spec system.
+Every stage requires independent critics and human approval; unresolved P0/P1 findings escalate after bounded rounds.
+
+## Generated platform
+
+The current generator includes React/Vite/Hono/Workers, D1 or Hyperdrive selection, OIDC Google/Kakao code, Stripe/Toss payment paths, order/subscription/entitlement/credits schemas, append-only ledger, webhook inbox/outbox, Admin/CS, privacy export/delete, security headers, request timing, Playwright, and environment/deploy workflows.
+
+CI checks the harness and generated project through dependency audit, TypeScript/Vite/Workers build, Wrangler dry-run, Vitest, and Playwright.
+
+Generated products remain `productionReady: false` until real provider credentials, sandbox lifecycle suites, database race/replay/recovery, deployed Preview→Staging→Production, and representative production pilots pass.
 
 ## Commands
 
 | Command | Purpose |
 |---|---|
-| `init` | Create product, UX, and current-feature contracts |
-| `validate` | Block incomplete or unapproved contracts |
-| `plan` | Resolve modules, adapters, platform services, DB profile, and blockers |
-| `assemble --prototype` | Generate the React UX workspace after product approval |
-| `assemble` | Generate the strict approved workspace |
-| `risk` | Select focused verification from changed paths |
-| `workflow status/packet/record/evaluate/revise/approve` | Run the mandatory critic and approval lifecycle |
-| `integrations list/install` | Inspect or install pinned upstream adapters |
-
-## Current implementation status
-
-Implemented:
-
-- human-approved contracts and prototype bootstrap;
-- mandatory critic workflow and React UX Lab;
-- PRD, IA, journeys, screen contracts, architecture, DB/cache/infra/latency, phases, tasks, tests, and release artifacts;
-- official Spec Kit preset and pinned upstream manifest;
-- executable integration metadata for Spec Kit, Impeccable, OpenSpec, and GSD plus provider-specific Superpowers/Open Design instructions;
-- region and monetization resolver;
-- Cloudflare/D1/PostgreSQL escape profile;
-- generated React/Vite/Hono/Workers app;
-- identity, billing, credits, Admin, privacy, audit, and release module scaffolds;
-- focused verification router;
-- generated-project install/build/test/audit CI.
-
-Still incomplete:
-
-- production Kakao and Google identity;
-- production KR/global payment adapters;
-- fully hardened order/subscription/entitlement/credits modules;
-- production Admin/CS/privacy workflows;
-- verifier-owned browser journeys for all critical paths;
-- complete Preview→Staging→Production automation;
-- three real B2C production pilots;
-- enabled Meta-Harness search. The bounded domain spec exists at [`harness-lab/meta-harness/domain_spec.md`](harness-lab/meta-harness/domain_spec.md), but activation requirements are intentionally unmet.
+| `init` | create product, UX, and current-feature contracts |
+| `validate` | block incomplete or unapproved contracts |
+| `plan` | resolve modules, adapters, services, DB profile, and blockers |
+| `assemble --prototype` | create the React UX workspace after product approval |
+| `assemble` | create the strict approved project |
+| `risk` | select focused verification from changed paths |
+| `workflow ...` | mandatory critic and approval lifecycle |
+| `integrations list/install` | inspect or install bounded upstream adapters |
 
 ## Validation
 
@@ -168,4 +133,4 @@ Still incomplete:
 npm run check
 ```
 
-The current branch must not claim that generated products are production-ready until the protected modules and adapters pass their real provider, database, recovery, and release tests.
+See [`docs/full-workflow.md`](docs/full-workflow.md) and [`docs/requirements-traceability.md`](docs/requirements-traceability.md).

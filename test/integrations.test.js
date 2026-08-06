@@ -58,3 +58,19 @@ test('UI UX Pro Max requires license review and is not default', () => {
   assert.equal(integrations['ui-ux-pro-max'].default, false);
   assert.equal(integrations['ui-ux-pro-max'].license, 'REVIEW_REQUIRED');
 });
+
+test('Pro UI Engineering is bundled and Strands is product-conditional', () => {
+  const integrations = listIntegrations();
+  assert.equal(integrations['pro-ui-engineering'].mode, 'bundled-curated-attributed-subset');
+  assert.deepEqual(integrations['pro-ui-engineering'].requiredFor, ['ux-ia']);
+  assert.equal(integrations['harness-sdk'].default, false);
+  assert.match(integrations['harness-sdk'].activation, /product\.yml/);
+});
+
+test('unavailable Agent Startup Kit is not silently installed or credited', () => {
+  const integrations = listIntegrations();
+  assert.equal(integrations['agent-startup-kit'].mode, 'not-integrated-source-unavailable');
+  assert.equal(integrations['agent-startup-kit'].license, 'UNKNOWN');
+  const result = integrationCommand('agent-startup-kit', 'codex', '.');
+  assert.match(result.instructions, /404|could not be verified/i);
+});

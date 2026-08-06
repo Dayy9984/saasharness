@@ -7,12 +7,13 @@
       "React and Cloudflare assembly glue",
       "provider adapters not supplied by upstreams",
       "cross-upstream workflow state and evidence contracts",
-      "production module ports with source-level attribution"
+      "production module ports with source-level attribution",
+      "curated UI engineering references with preserved license notices"
     ],
     "notCountedAsIntegration": [
       "README inspiration",
       "unattributed reimplementation",
-      "a source URL without an executable adapter, preset, plugin, or code port"
+      "a source URL without an executable adapter, preset, plugin, attributed port, or explicit bounded reference role"
     ]
   },
   "upstreams": {
@@ -41,6 +42,14 @@
       "mode": "pinned project install",
       "required": true
     },
+    "pro-ui-engineering": {
+      "repository": "yzfly/pro-ui-engineering-skill",
+      "ref": "e74d280ae9bed1b9e729f8bf315a07349435a0d2",
+      "license": "MIT",
+      "role": "bundled attributed B2C visual-system, component-recipe, and spring-physics reference subset",
+      "mode": "curated source subset under skills/pro-ui-engineering",
+      "requiredFor": ["ux-ia"]
+    },
     "open-design": {
       "repository": "nexu-io/open-design",
       "ref": "f2a7568dae22730fa4a2371f6db2f0eab83191e8",
@@ -48,7 +57,15 @@
       "role": "running design artifact and prototype engine",
       "mode": "external daemon and MCP integration",
       "requiredFor": ["ux-ia"],
-      "fallback": "React UX Lab plus Impeccable when the external engine is unavailable"
+      "fallback": "React UX Lab plus bundled Pro UI Engineering and Impeccable"
+    },
+    "ui-ux-pro-max": {
+      "repository": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "version": "2.5.0",
+      "license": "REVIEW_REQUIRED",
+      "role": "optional searchable design-intelligence database",
+      "mode": "external CLI only after license review",
+      "required": false
     },
     "openspec": {
       "repository": "Fission-AI/OpenSpec",
@@ -61,6 +78,7 @@
     },
     "gsd-core": {
       "repository": "open-gsd/gsd-core",
+      "previousRepository": "gsd-build/get-shit-done",
       "ref": "4926c2e9046ea20e7c22df55e89124d5463b267a",
       "version": "1.9.1",
       "license": "MIT",
@@ -73,7 +91,7 @@
       "repository": "nikandr-surkov/ai-saas-starter",
       "ref": "d8e51ddb4f641995097c25dc2fc1749149149e1b",
       "license": "MIT",
-      "role": "money-path source port: ledger, idempotency, single-writer billing, replay and race tests",
+      "role": "money-path source port: ledger, idempotency collision checks, single-writer billing, replay and race tests",
       "mode": "attributed source-pattern port into Cloudflare modules",
       "requiredFor": ["billing", "credits"]
     },
@@ -84,6 +102,15 @@
       "role": "B2C SaaS capability inventory and operational completeness reference",
       "mode": "reference profile; Wasp runtime is not the default",
       "required": false
+    },
+    "harness-sdk": {
+      "repository": "strands-agents/harness-sdk",
+      "ref": "a10881c7191207f3c267af191955ae9e0a708309",
+      "license": "Apache-2.0",
+      "role": "optional model-agnostic runtime when the generated SaaS itself contains agents",
+      "mode": "official @strands-agents/sdk package",
+      "required": false,
+      "activation": "only for agentic product capabilities"
     },
     "meta-harness": {
       "repository": "stanford-iris-lab/meta-harness",
@@ -100,6 +127,13 @@
       "license": "MIT",
       "role": "optional persistent-memory and skill-learning proposer/runtime",
       "mode": "optional research backend, never the production self-modification authority",
+      "required": false
+    },
+    "agent-startup-kit": {
+      "repository": "Blink-h/agent-startup-kit",
+      "license": "UNKNOWN",
+      "role": "previously considered skill-driven SaaS workflow reference",
+      "mode": "not integrated: primary repository currently unavailable/404",
       "required": false
     },
     "cloudflare-react-template": {

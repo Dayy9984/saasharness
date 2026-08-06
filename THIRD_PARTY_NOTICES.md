@@ -1,31 +1,28 @@
 # Third-party notices and integration boundaries
 
-SaaS Harness follows an **upstream-first** architecture. Exact repository commits, versions, roles, and activation rules are recorded in [`upstreams.lock.json`](upstreams.lock.json).
+SaaS Harness contains original workflow/platform code and a small attributed UI-reference subset. It does not silently copy every upstream runtime.
 
-## Installed or executable upstream integrations
+## MIT sources
 
-- **GitHub Spec Kit** — MIT. Official CLI is the canonical initial specification host. This repository adds a B2C preset through Spec Kit's official preset mechanism; it does not replace the Spec Kit lifecycle.
-- **obra/superpowers** — MIT. Official provider plugin is the canonical implementation, RED–GREEN–REFACTOR, debugging, review, and branch-completion host.
-- **Impeccable** — Apache-2.0. Pinned project installation (`impeccable@3.5.0`) is the canonical UI critic and deterministic frontend detector.
-- **Open Design** — Apache-2.0. External daemon/MCP is the default design-artifact engine where available. Its own installation, runtime, assets, and license terms apply.
-- **OpenSpec** — MIT. Official npm CLI is the living-change host after the first approved baseline.
-- **GSD Core** — MIT. Official npm package is an optional long-horizon execution and recovery path.
-- **Cloudflare templates** — Apache-2.0. The generated React/Vite/Hono/Workers shape is kept compatible with the pinned official template. Security-patched dependency versions may intentionally differ from an older upstream pin.
+- **GitHub Spec Kit** (`github/spec-kit`) — official CLI/preset integration for initial specification, planning, tasks, analysis, and coding-agent adapters.
+- **Superpowers** (`obra/superpowers`) — official provider plugin for design discussion, small plans, RED–GREEN–REFACTOR, debugging, execution, and review.
+- **OpenSpec** (`Fission-AI/OpenSpec`) — official CLI for living changes after the first approved baseline.
+- **GSD Core** (`open-gsd/gsd-core`; successor to archived `gsd-build/get-shit-done`) — optional fresh-context execution, durable state, resume, and recovery.
+- **AI SaaS Starter** (`nikandr-surkov/ai-saas-starter`) — attributed safety-pattern port for append-only credits, idempotency collision checks, conditional spends, compensating refunds, raw webhooks, and single writers.
+- **Open SaaS** (`wasp-lang/open-saas`) — B2C capability inventory and provider-variability reference; Wasp/Prisma/Astro are not bundled into the default runtime.
+- **Pro UI Engineering Skill** (`yzfly/pro-ui-engineering-skill`) — an attributed modified curated subset is bundled under `skills/pro-ui-engineering/`; the upstream MIT notice is preserved there.
+- **Meta-Harness** (`stanford-iris-lab/meta-harness`) and **Hermes Agent** (`NousResearch/hermes-agent`) — optional research-lab sources only, not production self-modification authority.
 
-## Attributed source ports and references
+## Apache-2.0 sources
 
-- **nikandr-surkov/ai-saas-starter** — MIT. The Cloudflare module pack ports and adapts money-path invariants and tests such as append-only ledgers, unique idempotency, conditional atomic spend, compensating refunds, subscription single-writer rules, and replay/race coverage. Product-specific UI, Next.js, Better Auth, and Stripe are not treated as universal defaults.
-- **wasp-lang/open-saas** — MIT. Used as a B2C SaaS feature and operational-completeness reference. The Wasp runtime is not bundled in the default React + Cloudflare profile.
+- **Open Design** (`nexu-io/open-design`) — external design artifact engine and MCP; design-contract and skill protocol patterns are used.
+- **Impeccable** (`pbakaus/impeccable`) — pinned external critique, audit, hardening, animation, browser iteration, and deterministic anti-pattern evidence.
+- **Strands Agents Harness SDK** (`strands-agents/harness-sdk`) — optional product-agent runtime package when the generated SaaS itself contains agents.
+- **Cloudflare Templates** (`cloudflare/templates`) — official React/Vite/Workers compatibility baseline; generated dependency versions are independently audited.
 
-## Research-only upstreams
+## Optional or unavailable
 
-- **stanford-iris-lab/meta-harness** — MIT. Used only by the separate bounded optimization lab described in `harness-lab/meta-harness/domain_spec.md`.
-- **NousResearch/hermes-agent** — MIT. May be used as an optional proposer, persistent memory, or skill-candidate backend in the lab. Hermes-created skills cannot self-promote into the production harness.
+- **UI UX Pro Max** (`nextlevelbuilder/ui-ux-pro-max-skill`) — not bundled or auto-enabled because visible repository/package and CLI documentation expose inconsistent license statements. Review current terms before installation.
+- **Agent Startup Kit** (`Blink-h/agent-startup-kit`) — currently unavailable/404. No code or method is attributed to it until a verifiable primary source exists.
 
-## Not bundled by default
-
-- **UI UX Pro Max** — the repository root and package metadata state MIT, while `cli/README.md` states CC-BY-NC-4.0. It is not bundled or auto-enabled until the license is clarified.
-
-A project is not described as integrated merely because SaaS Harness uses a similar idea. Integration requires an official pinned CLI/plugin/preset/MCP adapter, an attributed source port with tests, or a benchmark-compatible research adapter.
-
-When external tools are installed, their own licenses, notices, trademarks, generated assets, and dependency licenses apply.
+External installations retain their own notices and license obligations.

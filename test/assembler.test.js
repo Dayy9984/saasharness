@@ -34,6 +34,9 @@ test('assembler installs workflow artifacts and universal skills', async () => {
   await access(path.join(output, 'artifacts/03-architecture/db-model.md'));
   await access(path.join(output, 'artifacts/04-plan/tasks.md'));
   await access(path.join(output, '.agents/skills/b2c-critic/SKILL.md'));
+  await access(path.join(output, '.agents/skills/pro-ui-engineering/SKILL.md'));
+  await access(path.join(output, '.agents/skills/b2c-change-management/SKILL.md'));
+  await access(path.join(output, '.agents/skills/b2c-context-execution/SKILL.md'));
   const policy = await readJson(path.join(output, '.saasharness/critic-policy.json'));
   assert.deepEqual(policy['ux-ia'].channels, ['experience', 'design', 'browser-evidence']);
 });
@@ -48,6 +51,8 @@ test('assembler ships the pinned upstream manifest and actual Spec Kit preset', 
   assert.equal(upstreams.policy.strategy, 'upstream-first');
   assert.equal(upstreams.upstreams['spec-kit'].required, true);
   assert.equal(upstreams.upstreams.superpowers.required, true);
+  assert.equal(upstreams.upstreams['pro-ui-engineering'].repository, 'yzfly/pro-ui-engineering-skill');
+  assert.match(upstreams.upstreams['agent-startup-kit'].mode, /not integrated/);
   await access(path.join(output, '.saasharness/upstreams/spec-kit-b2c/preset.yml'));
   await access(path.join(output, '.saasharness/upstreams/spec-kit-b2c/templates/spec-template.md'));
   await access(path.join(output, '.saasharness/upstreams/spec-kit-b2c/templates/plan-template.md'));

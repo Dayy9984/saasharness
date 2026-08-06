@@ -10,6 +10,8 @@ const REFS = Object.freeze({
   gsd: '4926c2e9046ea20e7c22df55e89124d5463b267a',
   metaHarness: '44b9942127847f7421db70d8c7e48407f09a3c70',
   hermes: '01a1037d1e6d7b6eb96a786ef282c3aea4818194',
+  proUi: 'e74d280ae9bed1b9e729f8bf315a07349435a0d2',
+  strands: 'a10881c7191207f3c267af191955ae9e0a708309',
 });
 
 export const INTEGRATIONS = Object.freeze({
@@ -66,7 +68,7 @@ export const INTEGRATIONS = Object.freeze({
     ref: REFS.openDesign,
     license: 'Apache-2.0',
     source: 'https://github.com/nexu-io/open-design',
-    fallback: 'React UX Lab plus Impeccable when Open Design is unavailable',
+    fallback: 'React UX Lab plus bundled Pro UI Engineering and Impeccable when Open Design is unavailable',
     instructions(provider = 'codex') {
       return `Run Open Design at ref ${this.ref}, then execute: od mcp install ${provider}. Keep the resulting design artifact and DESIGN.md as UX evidence.`;
     },
@@ -87,6 +89,18 @@ export const INTEGRATIONS = Object.freeze({
         cwd: projectDir,
       }];
     },
+  },
+  'pro-ui-engineering': {
+    role: 'bundled-ui-engineering-reference',
+    purpose: 'Engineering-grade design-system references, component recipes, interaction mental models, and spring-physics guidance',
+    default: true,
+    required: false,
+    requiredFor: ['ux-ia'],
+    mode: 'bundled-curated-attributed-subset',
+    ref: REFS.proUi,
+    license: 'MIT',
+    source: 'https://github.com/yzfly/pro-ui-engineering-skill',
+    note: 'A curated attributed subset is bundled under skills/pro-ui-engineering. It informs design directions but never overrides product intent, human approval, or browser evidence.',
   },
   openspec: {
     role: 'canonical-living-change-host',
@@ -141,6 +155,21 @@ export const INTEGRATIONS = Object.freeze({
     source: 'https://github.com/wasp-lang/open-saas',
     note: 'Use its capability inventory and tested product paths; Wasp is not the React + Cloudflare default runtime.',
   },
+  'harness-sdk': {
+    role: 'optional-product-agent-runtime',
+    purpose: 'Model-agnostic product agent loops, tools, hooks, limits, tracing, guardrails, steering, streaming, and structured output',
+    default: false,
+    required: false,
+    activation: 'only when product.yml declares that the generated SaaS itself contains agents',
+    mode: 'official-npm-package',
+    ref: REFS.strands,
+    license: 'Apache-2.0',
+    source: 'https://github.com/strands-agents/harness-sdk',
+    note: 'This is a runtime for agentic product features, not the default coding-harness engine.',
+    steps(_provider = 'codex', projectDir = '.') {
+      return [{ executable: ['npm', 'install', '@strands-agents/sdk'], cwd: projectDir }];
+    },
+  },
   'meta-harness': {
     role: 'outer-loop-harness-optimizer',
     purpose: 'Search over bounded context, retrieval, skill activation, critic, and workflow policies with prior candidate code, scores, and traces',
@@ -182,6 +211,16 @@ export const INTEGRATIONS = Object.freeze({
       }];
     },
   },
+  'agent-startup-kit': {
+    role: 'unavailable-previous-candidate',
+    purpose: 'Previously considered skill-driven SaaS workflow reference',
+    default: false,
+    required: false,
+    mode: 'not-integrated-source-unavailable',
+    license: 'UNKNOWN',
+    source: 'https://github.com/Blink-h/agent-startup-kit',
+    note: 'The repository currently returns 404 and could not be verified. No code or workflow is attributed to it until a primary source becomes available.',
+  },
 });
 
 export function listIntegrations() {
@@ -208,14 +247,14 @@ export function integrationCommand(name, provider = 'codex', projectDir = '.') {
   if (!integration) throw new Error(`unknown integration: ${name}`);
   if (integration.steps) return { steps: integration.steps(provider, projectDir) };
   if (integration.instructions) return { instructions: integration.instructions(provider) };
-  return { instructions: `This upstream is integrated by policy or attributed source port. See ${integration.source}` };
+  return { instructions: integration.note ?? `This upstream is integrated by policy or attributed source port. See ${integration.source}` };
 }
 
 export function installIntegration(name, provider = 'codex', projectDir = '.', execute = false) {
   const integration = INTEGRATIONS[name];
   if (!integration) throw new Error(`unknown integration: ${name}`);
-  if (integration.license === 'REVIEW_REQUIRED' && execute) {
-    throw new Error(`${name} requires manual license review before installation: ${integration.note}`);
+  if ((integration.license === 'REVIEW_REQUIRED' || integration.license === 'UNKNOWN') && execute) {
+    throw new Error(`${name} cannot be automatically installed: ${integration.note}`);
   }
   const command = integrationCommand(name, provider, projectDir);
   if (!execute || !command.steps) return { name, provider, execute: false, ...command };
