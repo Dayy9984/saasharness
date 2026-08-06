@@ -14,6 +14,8 @@ test('assembler creates deterministic web-only Cloudflare workspace', async () =
   assert.equal(result.plan.product.targets.includes('web'), true);
   await access(path.join(output, 'src/react/App.tsx'));
   await access(path.join(output, 'src/react/ux-lab/UxLab.tsx'));
+  await access(path.join(output, 'src/react/ux-lab/ThemeGallery.tsx'));
+  await access(path.join(output, 'src/react/ux-lab/ProductPrototype.tsx'));
   await access(path.join(output, 'src/worker/index.ts'));
   await access(path.join(output, 'wrangler.jsonc'));
   await assert.rejects(() => access(path.join(output, 'mobile')));
@@ -21,24 +23,20 @@ test('assembler creates deterministic web-only Cloudflare workspace', async () =
   assert.equal(lock.starter, 'b2c-react-cloudflare@0.3.0');
 });
 
-test('assembler installs workflow artifacts and universal skills', async () => {
+test('assembler installs staged design artifacts, critic workflow, and skills', async () => {
   const root = await tempDir();
   const contracts = path.join(root, 'contracts');
   const output = path.join(root, 'generated');
   await writeContracts(contracts);
   await assembleProject(contracts, output);
-  await access(path.join(output, '.saasharness/workflow.json'));
-  await access(path.join(output, '.saasharness/critic-policy.json'));
-  await access(path.join(output, 'artifacts/01-product/prd.md'));
-  await access(path.join(output, 'artifacts/02-ux/ia.md'));
-  await access(path.join(output, 'artifacts/03-architecture/db-model.md'));
-  await access(path.join(output, 'artifacts/04-plan/tasks.md'));
-  await access(path.join(output, '.agents/skills/b2c-critic/SKILL.md'));
-  await access(path.join(output, '.agents/skills/pro-ui-engineering/SKILL.md'));
-  await access(path.join(output, '.agents/skills/b2c-change-management/SKILL.md'));
-  await access(path.join(output, '.agents/skills/b2c-context-execution/SKILL.md'));
+  await access(path.join(output, 'SOUL.md'));
+  await access(path.join(output, 'artifacts/02-ux/pinterest-research.yml'));
+  await access(path.join(output, 'artifacts/02-ux/theme-selection.yml'));
+  await access(path.join(output, '.agents/skills/b2c-design-research/SKILL.md'));
   const policy = await readJson(path.join(output, '.saasharness/critic-policy.json'));
-  assert.deepEqual(policy['ux-ia'].channels, ['experience', 'design', 'browser-evidence']);
+  assert.deepEqual(policy['ux-themes'].channels, ['research-integrity', 'theme-diversity', 'browser-evidence']);
+  const themes = await readJson(path.join(output, 'src/react/ux-lab/theme-catalog.json'));
+  assert.equal(themes.length, 15);
 });
 
 test('assembler ships the pinned upstream manifest and actual Spec Kit preset', async () => {
@@ -51,12 +49,7 @@ test('assembler ships the pinned upstream manifest and actual Spec Kit preset', 
   assert.equal(upstreams.policy.strategy, 'upstream-first');
   assert.equal(upstreams.upstreams['spec-kit'].required, true);
   assert.equal(upstreams.upstreams.superpowers.required, true);
-  assert.equal(upstreams.upstreams['pro-ui-engineering'].repository, 'yzfly/pro-ui-engineering-skill');
-  assert.match(upstreams.upstreams['agent-startup-kit'].mode, /not integrated/);
   await access(path.join(output, '.saasharness/upstreams/spec-kit-b2c/preset.yml'));
-  await access(path.join(output, '.saasharness/upstreams/spec-kit-b2c/templates/spec-template.md'));
-  await access(path.join(output, '.saasharness/upstreams/spec-kit-b2c/templates/plan-template.md'));
-  await access(path.join(output, '.saasharness/upstreams/spec-kit-b2c/templates/tasks-template.md'));
 });
 
 test('generated UI visibly warns when provider adapters block production', async () => {
