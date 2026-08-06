@@ -224,24 +224,7 @@ Preview
 → Production
 ```
 
-## 12. Tetris pilot
-
-The CI virtual environment exercises the workflow with a simple playable falling-block game:
-
-```text
-approved contracts
-→ lightweight SOUL.md
-→ 15 clean treatment variants
-→ explicit apple-glass-controls selection
-→ modular React Tetris
-→ engine unit tests
-→ browser gallery smoke
-→ browser move / rotate / hard-drop / restart journey
-```
-
-The pilot deliberately does not use screenshot artifacts or fixed viewport gates. It validates harness flow and functionality, not subjective UI quality.
-
-## 13. Manual critic controls
+## 12. Manual critic controls
 
 ```bash
 saasharness workflow packet . ux-themes
@@ -252,6 +235,6 @@ saasharness workflow evaluate . ux-themes
 saasharness workflow revise . ux-themes
 ```
 
-## 14. Production evidence
+## 13. Production evidence
 
 Generated code remains blocked from production until the selected product passes real provider and operational gates: account lifecycles, payment/refund/subscription states, idempotency and replay, database race/recovery, operator journeys, deployed environment promotion, and post-release verification. The harness automates workflow and evidence collection; it does not fabricate credentials or unexecuted sandbox evidence.
