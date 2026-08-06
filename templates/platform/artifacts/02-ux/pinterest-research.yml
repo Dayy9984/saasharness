@@ -1,25 +1,35 @@
-version: 1
+version: 2
 status: draft
 method: authorized-browser-research
-source: pinterest
+sources: [pinterest, public-product-pages, design-system-documentation]
 policy:
   automated_scraping: forbidden
   copy_original_assets: forbidden
   store_urls_and_observations_only: true
-  preserve_creator_attribution: true
+  preserve_visible_attribution: true
 canonical_screen:
-  purpose: compare visual systems using the same neutral content skeleton
+  purpose: compare practical component treatment while keeping a standard B2C SaaS IA, layout, content skeleton, and user flow
   real_mock_data: false
-search_clusters: []
+  same_ia_layout_and_flow: true
+search_clusters:
+  - clean B2C SaaS interface
+  - Apple-like glass controls used selectively
+  - Linear-like compact product UI
+  - Miro-like friendly grouping
+  - Stripe-like payment trust
+  - content-first readability
+  - accessible focus and touch targets
 references: []
-# Each reference should contain:
-# - url: Pinterest Pin, Board, or search URL
-# - creator_or_board: visible attribution when available
-# - observed: [layout, typography, palette, texture, interaction, motion]
+# Each reviewed reference should contain:
+# - url: public Pin, Board, search, product, or design-system URL
+# - source_or_creator: visible attribution when available
+# - observed: [hierarchy, controls, surfaces, density, radius, focus, accent, motion, trust]
 # - use: abstract principle only
-# - do_not_copy: original image, logo, illustration, brand asset, exact composition
+# - do_not_copy: original image, logo, illustration, brand asset, exact composition, distinctive identity
 candidate_requirements:
   count: 15
-  minimum_material_differences: [layout, typography, palette, shape, density, texture, motion]
-  hue_swaps_do_not_count: true
+  allowed_variation_axes: [button-material, selected-glass-controls, surface-depth, density, radius, accent, focus, motion]
+  prohibited_by_default: [neon-theme, brutalist-theme, game-theme, novelty-theme, art-direction-theme]
   same_screen_structure: true
+  same_user_flow: true
+  legibility_and_accessibility_required: true
