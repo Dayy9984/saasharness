@@ -33,3 +33,7 @@ jobs:
         working-directory: ./.tmp/demo
       - run: npm test
         working-directory: ./.tmp/demo
+      - run: npx playwright install --with-deps chromium
+        working-directory: ./.tmp/demo
+      - run: npm run test:e2e
+        working-directory: ./.tmp/demo

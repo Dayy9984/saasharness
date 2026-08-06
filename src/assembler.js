@@ -4,6 +4,7 @@ import { loadContracts, validateContracts } from './contracts.js';
 import { prepareOutput, writeFiles, copyDirectory } from './fs-utils.js';
 import { resolvePlan } from './resolver.js';
 import { starterFiles } from './starter-files.js';
+import { platformFiles } from './platform-templates.js';
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -26,6 +27,7 @@ export async function assembleProject(contractDir, outDir, options = {}) {
     feature: contracts.feature.raw,
   };
   await writeFiles(outDir, starterFiles(plan, raw));
+  await writeFiles(outDir, platformFiles(plan));
   const skillsSource = path.join(packageRoot, 'skills');
   await copyDirectory(skillsSource, path.join(outDir, '.agents', 'skills'));
   return { outDir: path.resolve(outDir), validation, plan };
