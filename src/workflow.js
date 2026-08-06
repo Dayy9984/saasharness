@@ -2,9 +2,36 @@ import path from 'node:path';
 import { readUtf8, writeUtf8, ensureDir, exists } from './fs-utils.js';
 import { validateCriticReport, summarizeCriticReports } from './critic.js';
 
+const UX_PROTOTYPE_POLICY = Object.freeze({
+  maxRounds: 3,
+  humanApproval: true,
+  channels: ['experience', 'design', 'browser-evidence'],
+  artifacts: [
+    'contracts/ux.yml',
+    'SOUL.md',
+    'artifacts/02-ux/theme-selection.yml',
+    'artifacts/02-ux/ia.md',
+    'artifacts/02-ux/journeys.md',
+    'artifacts/02-ux/screen-contracts.yml',
+    'artifacts/02-ux/design-system.md',
+    'artifacts/02-ux/component-inventory.md',
+    'src/react/ux-lab/ProductPrototype.tsx',
+  ],
+  evidence: [
+    'approved SOUL.md',
+    'approved theme selection',
+    'running React mock with realistic mock data',
+    'primary and recovery journey interaction trace',
+    'screenshots or video',
+    'accessibility tree, console, network, and responsive evidence',
+  ],
+});
+
 export const STAGE_ORDER = Object.freeze([
   'discovery',
-  'ux-ia',
+  'ux-philosophy',
+  'ux-themes',
+  'ux-prototype',
   'architecture',
   'plan',
   'implementation',
@@ -12,27 +39,47 @@ export const STAGE_ORDER = Object.freeze([
 ]);
 
 export const CRITIC_POLICY = Object.freeze({
-  'discovery': {
+  discovery: {
     maxRounds: 2,
     humanApproval: true,
     channels: ['intent', 'requirements'],
     artifacts: ['contracts/product.yml', 'artifacts/01-product/prd.md', 'artifacts/01-product/policies.yml'],
     evidence: ['raw user decisions', 'assumptions and unresolved questions'],
   },
-  'ux-ia': {
+  'ux-philosophy': {
+    maxRounds: 2,
+    humanApproval: true,
+    channels: ['product-fit', 'design-coherence'],
+    artifacts: ['contracts/product.yml', 'contracts/ux.yml', 'SOUL.md'],
+    evidence: [
+      'human design-philosophy dialogue',
+      'product promise and target-user context',
+      'references and anti-references',
+      'explicit visual, interaction, motion, and accessibility principles',
+    ],
+  },
+  'ux-themes': {
     maxRounds: 3,
     humanApproval: true,
-    channels: ['experience', 'design', 'browser-evidence'],
+    channels: ['research-integrity', 'theme-diversity', 'browser-evidence'],
     artifacts: [
-      'contracts/ux.yml',
-      'artifacts/02-ux/ia.md',
-      'artifacts/02-ux/journeys.md',
-      'artifacts/02-ux/screen-contracts.yml',
-      'artifacts/02-ux/design-system.md',
+      'SOUL.md',
+      'artifacts/02-ux/pinterest-research.yml',
+      'src/react/ux-lab/theme-catalog.json',
+      'artifacts/02-ux/theme-selection.yml',
     ],
-    evidence: ['running React mock', 'screenshots or video', 'interaction trace', 'approved references'],
+    evidence: [
+      'Pinterest pin, board, or search URLs collected through authorized browser use rather than automated scraping',
+      'observed layout, type, color, texture, interaction, and anti-copy notes',
+      'exactly 15 materially distinct variants of one canonical screen',
+      'running gallery at /__ux/themes and one detail page per theme',
+      'same neutral content skeleton across all variants so style is compared rather than data',
+    ],
   },
-  'architecture': {
+  'ux-prototype': UX_PROTOTYPE_POLICY,
+  // Read-only compatibility alias for older generated projects and integrations.
+  'ux-ia': UX_PROTOTYPE_POLICY,
+  architecture: {
     maxRounds: 2,
     humanApproval: true,
     channels: ['standards', 'operability'],
@@ -46,7 +93,7 @@ export const CRITIC_POLICY = Object.freeze({
     ],
     evidence: ['module-lock.json', '.saasharness/plan.json', 'provider and data-policy decisions'],
   },
-  'plan': {
+  plan: {
     maxRounds: 2,
     humanApproval: true,
     channels: ['scope', 'testability'],
@@ -58,14 +105,14 @@ export const CRITIC_POLICY = Object.freeze({
     ],
     evidence: ['dependency order', 'WIP=1 slice boundary', 'acceptance and rollback'],
   },
-  'implementation': {
+  implementation: {
     maxRounds: 2,
     humanApproval: true,
     channels: ['spec-compliance', 'code-quality', 'runtime-evidence'],
     artifacts: ['artifacts/05-implementation/implementation-log.md'],
     evidence: ['git diff', 'RED/GREEN evidence', 'test output', 'running preview', 'latency and error signals'],
   },
-  'release': {
+  release: {
     maxRounds: 2,
     humanApproval: true,
     channels: ['release-risk', 'release-evidence'],
@@ -78,26 +125,46 @@ const statePath = (projectDir) => path.join(projectDir, '.saasharness', 'workflo
 const policyPath = (projectDir) => path.join(projectDir, '.saasharness', 'critic-policy.json');
 const reviewDir = (projectDir, stage, round) => path.join(projectDir, '.saasharness', 'reviews', stage, `round-${round}`);
 
+function blankStageState() {
+  return {
+    status: 'draft',
+    round: 1,
+    decision: null,
+    approval: null,
+    reports: {},
+  };
+}
+
 export function initialWorkflowState(profileHash = null) {
   return {
-    version: 1,
+    version: 2,
     profileHash,
     currentStage: STAGE_ORDER[0],
-    stages: Object.fromEntries(STAGE_ORDER.map((stage) => [stage, {
-      status: 'draft',
-      round: 1,
-      decision: null,
-      approval: null,
-      reports: {},
-    }])),
+    stages: Object.fromEntries(STAGE_ORDER.map((stage) => [stage, blankStageState()])),
   };
+}
+
+function migrateLegacyWorkflow(state) {
+  if (state?.version === 2 && STAGE_ORDER.every((stage) => state.stages?.[stage])) return state;
+  const migrated = initialWorkflowState(state?.profileHash ?? null);
+  for (const stage of ['discovery', 'architecture', 'plan', 'implementation', 'release']) {
+    if (state?.stages?.[stage]) migrated.stages[stage] = state.stages[stage];
+  }
+  const legacyUx = state?.stages?.['ux-ia'];
+  if (legacyUx?.status === 'approved') {
+    for (const stage of ['ux-philosophy', 'ux-themes', 'ux-prototype']) migrated.stages[stage] = legacyUx;
+  }
+  const current = state?.currentStage;
+  if (current === 'ux-ia') migrated.currentStage = legacyUx?.status === 'approved' ? 'architecture' : 'ux-philosophy';
+  else if (STAGE_ORDER.includes(current)) migrated.currentStage = current;
+  return migrated;
 }
 
 export async function loadWorkflow(projectDir) {
   const raw = await readUtf8(statePath(projectDir)).catch(() => {
     throw new Error(`workflow state not found: ${statePath(projectDir)}`);
   });
-  return JSON.parse(raw);
+  return migrateLegacyWorkflow(JSON.parse(raw));
 }
 
 export async function saveWorkflow(projectDir, state) {
@@ -124,14 +191,14 @@ export async function createCriticPacket(projectDir, stage) {
   if (!stageState) throw new Error(`workflow does not contain stage: ${stage}`);
   const policy = CRITIC_POLICY[stage];
   const packet = {
-    version: 1,
+    version: 2,
     stage,
     round: stageState.round,
     maxRounds: policy.maxRounds,
     requiredChannels: policy.channels,
     artifacts: policy.artifacts,
     requiredEvidence: policy.evidence,
-    independence: 'Each channel must assess independently before synthesis. UX may not be judged from code alone.',
+    independence: 'Each channel must assess independently before synthesis. UX may not be judged from source code alone.',
     outputContract: {
       stage,
       channel: '<one required channel>',
@@ -221,12 +288,37 @@ export async function reviseStage(projectDir, stage) {
   return stageState;
 }
 
+async function assertStageApprovalPrerequisites(projectDir, stage) {
+  if (stage === 'ux-philosophy' && !await exists(path.join(projectDir, 'SOUL.md'))) {
+    throw new Error('ux-philosophy requires SOUL.md');
+  }
+  if (stage === 'ux-themes') {
+    const catalogPath = path.join(projectDir, 'src', 'react', 'ux-lab', 'theme-catalog.json');
+    if (!await exists(catalogPath)) throw new Error('ux-themes requires src/react/ux-lab/theme-catalog.json');
+    const catalog = JSON.parse(await readUtf8(catalogPath));
+    const ids = new Set(Array.isArray(catalog) ? catalog.map((theme) => theme.id) : []);
+    if (!Array.isArray(catalog) || catalog.length !== 15 || ids.size !== 15) {
+      throw new Error('ux-themes requires exactly 15 uniquely identified theme variants');
+    }
+    const selectionPath = path.join(projectDir, 'artifacts', '02-ux', 'theme-selection.yml');
+    if (!await exists(selectionPath)) throw new Error('ux-themes requires a human theme selection');
+    const selection = await readUtf8(selectionPath);
+    if (!/status:\s*approved/.test(selection) || !/theme_id:\s*[^\s]+/.test(selection)) {
+      throw new Error('ux-themes requires an approved theme selection; run saasharness design select-theme');
+    }
+  }
+  if (stage === 'ux-prototype' && !await exists(path.join(projectDir, 'src', 'react', 'ux-lab', 'ProductPrototype.tsx'))) {
+    throw new Error('ux-prototype requires the modular React mock-data prototype');
+  }
+}
+
 export async function approveStage(projectDir, stage, approvedBy) {
   if (!approvedBy || approvedBy.trim() === '') throw new Error('--by is required');
   const state = await loadWorkflow(projectDir);
   const stageState = state.stages[stage];
   if (!stageState) throw new Error(`unknown stage: ${stage}`);
   if (stageState.decision !== 'pass') throw new Error(`${stage} cannot be approved until critic decision is pass`);
+  await assertStageApprovalPrerequisites(projectDir, stage);
   stageState.approval = { status: 'approved', approvedBy, approvedAt: new Date().toISOString() };
   stageState.status = 'approved';
   const index = STAGE_ORDER.indexOf(stage);
