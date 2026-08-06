@@ -19,11 +19,11 @@ const UX_PROTOTYPE_POLICY = Object.freeze({
   ],
   evidence: [
     'approved SOUL.md',
-    'approved theme selection',
+    'approved UI treatment selection',
     'running React mock with realistic mock data',
     'primary and recovery journey interaction trace',
-    'screenshots or video',
-    'accessibility tree, console, network, and responsive evidence',
+    'human approval that required responsive behavior is complete in the mock',
+    'browser console and network evidence for the approved flow',
   ],
 });
 
@@ -52,16 +52,16 @@ export const CRITIC_POLICY = Object.freeze({
     channels: ['product-fit', 'design-coherence'],
     artifacts: ['contracts/product.yml', 'contracts/ux.yml', 'SOUL.md'],
     evidence: [
-      'human design-philosophy dialogue',
+      'brief human UI-foundation discussion',
       'product promise and target-user context',
-      'references and anti-references',
-      'explicit visual, interaction, motion, and accessibility principles',
+      'clean B2C reference principles and anti-patterns',
+      'explicit decisions for density, surfaces, controls, motion, accessibility, and trust',
     ],
   },
   'ux-themes': {
     maxRounds: 3,
     humanApproval: true,
-    channels: ['research-integrity', 'theme-diversity', 'browser-evidence'],
+    channels: ['research-integrity', 'treatment-usefulness', 'browser-evidence'],
     artifacts: [
       'SOUL.md',
       'artifacts/02-ux/pinterest-research.yml',
@@ -69,11 +69,12 @@ export const CRITIC_POLICY = Object.freeze({
       'artifacts/02-ux/theme-selection.yml',
     ],
     evidence: [
-      'Pinterest pin, board, or search URLs collected through authorized browser use rather than automated scraping',
-      'observed layout, type, color, texture, interaction, and anti-copy notes',
-      'exactly 15 materially distinct variants of one canonical screen',
-      'running gallery at /__ux/themes and one detail page per theme',
-      'same neutral content skeleton across all variants so style is compared rather than data',
+      'public reference URLs or search URLs collected through authorized browser use rather than automated scraping',
+      'observations about clarity, hierarchy, controls, surfaces, density, focus, motion, and anti-copy constraints',
+      'exactly 15 useful treatments of one standard B2C SaaS screen',
+      'the same IA, layout, content skeleton, and user flow across all variants',
+      'variation limited to practical component treatment such as buttons, surfaces, density, radius, accent, focus, and motion',
+      'running gallery at /__ux/themes and one detail page per treatment',
     ],
   },
   'ux-prototype': UX_PROTOTYPE_POLICY,
@@ -208,7 +209,7 @@ export async function createCriticPacket(projectDir, stage) {
       findings: [{
         severity: '<P0|P1|P2|P3>',
         title: '<specific problem>',
-        evidence: '<observable evidence, file, screenshot, trace, test, or user quote>',
+        evidence: '<observable evidence, file, browser trace, test, or user quote>',
         impact: '<user, product, operational, or maintenance impact>',
         confidence: 0.0,
         requiresHumanDecision: false,
@@ -298,13 +299,13 @@ async function assertStageApprovalPrerequisites(projectDir, stage) {
     const catalog = JSON.parse(await readUtf8(catalogPath));
     const ids = new Set(Array.isArray(catalog) ? catalog.map((theme) => theme.id) : []);
     if (!Array.isArray(catalog) || catalog.length !== 15 || ids.size !== 15) {
-      throw new Error('ux-themes requires exactly 15 uniquely identified theme variants');
+      throw new Error('ux-themes requires exactly 15 uniquely identified UI treatment variants');
     }
     const selectionPath = path.join(projectDir, 'artifacts', '02-ux', 'theme-selection.yml');
-    if (!await exists(selectionPath)) throw new Error('ux-themes requires a human theme selection');
+    if (!await exists(selectionPath)) throw new Error('ux-themes requires a human UI treatment selection');
     const selection = await readUtf8(selectionPath);
     if (!/status:\s*approved/.test(selection) || !/theme_id:\s*[^\s]+/.test(selection)) {
-      throw new Error('ux-themes requires an approved theme selection; run saasharness design select-theme');
+      throw new Error('ux-themes requires an approved UI treatment selection; run saasharness design select-theme');
     }
   }
   if (stage === 'ux-prototype' && !await exists(path.join(projectDir, 'src', 'react', 'ux-lab', 'ProductPrototype.tsx'))) {
