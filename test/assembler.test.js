@@ -38,6 +38,22 @@ test('assembler installs workflow artifacts and universal skills', async () => {
   assert.deepEqual(policy['ux-ia'].channels, ['experience', 'design', 'browser-evidence']);
 });
 
+test('assembler ships the pinned upstream manifest and actual Spec Kit preset', async () => {
+  const root = await tempDir();
+  const contracts = path.join(root, 'contracts');
+  const output = path.join(root, 'generated');
+  await writeContracts(contracts);
+  await assembleProject(contracts, output);
+  const upstreams = await readJson(path.join(output, '.saasharness/upstreams.lock.json'));
+  assert.equal(upstreams.policy.strategy, 'upstream-first');
+  assert.equal(upstreams.upstreams['spec-kit'].required, true);
+  assert.equal(upstreams.upstreams.superpowers.required, true);
+  await access(path.join(output, '.saasharness/upstreams/spec-kit-b2c/preset.yml'));
+  await access(path.join(output, '.saasharness/upstreams/spec-kit-b2c/templates/spec-template.md'));
+  await access(path.join(output, '.saasharness/upstreams/spec-kit-b2c/templates/plan-template.md'));
+  await access(path.join(output, '.saasharness/upstreams/spec-kit-b2c/templates/tasks-template.md'));
+});
+
 test('generated UI visibly warns when provider adapters block production', async () => {
   const root = await tempDir();
   const contracts = path.join(root, 'contracts');
