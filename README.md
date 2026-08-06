@@ -220,22 +220,6 @@ The pinned source of truth is [`upstreams.lock.json`](upstreams.lock.json).
 
 UI UX Pro Max remains optional pending license clarification. Agent Startup Kit remains unintegrated while its primary repository is unavailable.
 
-## Tetris pilot
-
-The deterministic falling-block pilot verifies that the harness can:
-
-```text
-assemble a React + Cloudflare product
-→ load SOUL.md
-→ expose 15 clean UI treatments
-→ explicitly select apple-glass-controls
-→ overlay a modular playable React implementation
-→ build and run unit tests
-→ run a lightweight Playwright interaction journey
-```
-
-The pilot no longer uses screenshot artifacts or fixed viewport gates. It checks the workflow and gameplay behavior, not subjective UI quality.
-
 ## Generated B2C platform
 
 The generated project includes:
