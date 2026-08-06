@@ -11,19 +11,25 @@ ia:
   primary_navigation: []
   recovery_paths: []
 
-design_philosophy:
+ui_foundation:
   soul_file: SOUL.md
   status: draft
-  principles: []
-  references: []
-  anti_references: []
+  default: clean-b2c-saas
+  product_character: ""
+  density: standard
+  surface_treatment: solid-neutral
+  button_treatment: solid-primary
+  references: [apple-principles, linear-principles, miro-principles, stripe-principles, notion-principles]
+  anti_references: [novelty-theme, decorative-glass-everywhere, decorative-bounce, low-contrast]
 
-theme_exploration:
-  source: pinterest
+ui_treatment_exploration:
+  source: public-research-including-pinterest
   research_method: authorized-browser-research
   automated_scraping: forbidden
   candidate_count: 15
-  canonical_screen: neutral-design-only
+  canonical_screen: standard-b2c-saas-screen
+  same_ia_layout_and_flow: true
+  allowed_axes: [button-material, surface-depth, density, radius, accent, focus, motion]
   realistic_mock_data: false
   gallery_route: /__ux/themes
   status: draft
@@ -34,10 +40,9 @@ theme_selection:
   approval_artifact: artifacts/02-ux/theme-selection.yml
 
 design:
-  product_character: ""
-  density: standard
   component_system: modular
   source_of_truth: SOUL.md
+  responsive_approval: human-in-react-mock
 
 motion:
   system: spring
@@ -49,6 +54,8 @@ react_mock:
   status: draft
   fixture_states: [ready, loading, empty, error, paid-limit]
   starts_after_theme_approval: true
+  all_pages_required_before_implementation: true
+  responsive_behavior_completed_before_implementation: true
 
 usability_evidence:
   status: not-validated
