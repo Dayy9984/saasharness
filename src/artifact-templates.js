@@ -117,7 +117,6 @@ release:
 **Entry state:**
 
 | Step | User intent | UI action | System response | Latency feedback | Error/recovery |
-|---|---|---|---|---|---|
 | 1 | | | | | |
 
 ## Required B2C journeys
@@ -146,22 +145,34 @@ screens:
       token: smooth
       meaning: spatial-continuity
 `,
-    'artifacts/02-ux/design-system.md': `# Design System Contract
+    'artifacts/02-ux/design-system.md': `# B2C UI System Contract
 
-## Product character
+## Default foundation
 
-- Audience:
-- Desired emotional tone:
-- References:
-- Anti-references:
-- Design specificity: what must make this product recognizably its own?
+- Clean, highly legible, conventional B2C SaaS hierarchy
+- Familiar navigation, onboarding, billing, account, support, and recovery patterns
+- Accessible contrast, focus, keyboard operation, and reduced motion
+- Responsive behavior completed in the running React mock before production implementation
+- Practical component treatment only; no novelty theme or IA change without an explicit product decision
 
-## Foundation
+## Approved product-specific treatment
+
+- Product character:
+- Density:
+- Surface treatment:
+- Button treatment:
+- Accent role:
+- Trust considerations:
+- Approved treatment ID:
+- References and anti-references:
+
+## Foundation tokens
 
 - Color roles:
 - Typography:
 - Spacing and density:
 - Radius and elevation:
+- Focus treatment:
 - Icon language:
 - Responsive behavior:
 
@@ -177,14 +188,19 @@ screens:
 ## React mock approval
 
 - Mock URL:
+- Required pages complete:
 - Fixture set:
-- Approved screenshots/video:
+- Primary journey exercised:
+- Recovery journey exercised:
+- Responsive behavior reviewed by human:
+- Reduced-motion reviewed:
 - Product-owner approval:
 - Target-user evidence:
+- Automated browser scope: route and interaction smoke only
 
 ## Required critic before approval
 
-${stageChecklist('ux-ia')}
+${stageChecklist('ux-prototype')}
 `,
 
     'artifacts/03-architecture/module-graph.md': `# B2C Module Graph
@@ -288,7 +304,7 @@ For each feature generate trace spans, latency histograms, success/error/cancel 
 
 ## Phase 0 · Approved foundations
 
-- Product and UX artifacts approved
+- Product and complete React UX artifacts approved
 - Architecture critic passed
 - Module and provider blockers visible
 
@@ -324,10 +340,12 @@ For each feature generate trace spans, latency histograms, success/error/cancel 
 
 - Strict RED → GREEN → REFACTOR: domain, API, DB, auth, billing, credits, privacy, observable UI behavior
 - Scenario-first: signup, onboarding, payment completion, first value, recovery
-- Human-approved exception: throwaway UX mock and subjective style exploration
+- Human-approved exception: throwaway UX mock and subjective component-treatment exploration
+- Complete UI, IA, user flow, and responsive behavior in the React mock before implementation
 - Builder tests plus verifier-owned golden journeys
 - Do not weaken tests to obtain GREEN
 - Prefer a small reliable suite over a large brittle suite
+- Do not add fixed viewport matrices, screenshot gates, or visual-score loops by default
 
 ## Required critic before approval
 
