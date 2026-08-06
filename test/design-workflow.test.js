@@ -19,7 +19,19 @@ test('generated UX lab contains exactly fifteen unique design-only themes', asyn
   await access(path.join(output, 'SOUL.md'));
 });
 
-test('theme selection is explicit, human-attributed, and source controlled', async () => {
+test('production theme selection rejects unreviewed Pinterest evidence', async () => {
+  const root = await tempDir();
+  const contracts = path.join(root, 'contracts');
+  const output = path.join(root, 'generated');
+  await writeContracts(contracts);
+  await assembleProject(contracts, output);
+  await assert.rejects(
+    () => selectTheme(output, 'neon-arcade', 'owner'),
+    /human-reviewed|at least five traceable Pinterest URLs/,
+  );
+});
+
+test('pilot theme selection is explicit, human-attributed, and source controlled without claiming live research', async () => {
   const root = await tempDir();
   const contracts = path.join(root, 'contracts');
   const output = path.join(root, 'generated');
@@ -27,8 +39,9 @@ test('theme selection is explicit, human-attributed, and source controlled', asy
   await assembleProject(contracts, output);
   const before = await designStatus(output);
   assert.equal(before.selection, null);
-  const result = await selectTheme(output, 'neon-arcade', 'owner');
+  const result = await selectTheme(output, 'neon-arcade', 'owner', { pilot: true });
   assert.equal(result.themeId, 'neon-arcade');
+  assert.equal(result.status, 'pilot-approved');
   const selection = await readFile(path.join(output, 'src/react/ux-lab/theme-selection.ts'), 'utf8');
   assert.match(selection, /neon-arcade/);
 });
