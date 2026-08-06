@@ -3,6 +3,7 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { assembleProject, buildPlan } from './assembler.js';
 import { writeAgentConfig } from './agent-config.js';
+import { designStatus, readThemeCatalog, selectTheme } from './design-workflow.js';
 import { ensureDir, exists, readUtf8, writeUtf8 } from './fs-utils.js';
 import { routeRisk } from './risk-router.js';
 import {
@@ -21,7 +22,7 @@ import { runStageLoop } from './orchestrator.js';
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-const HELP = `SaaS Harness v0.4\n\nUsage:\n  saasharness init <directory> [--name <slug>]\n  saasharness validate <contract-directory>\n  saasharness plan <contract-directory> [--prototype]\n  saasharness assemble <contract-directory> --out <directory> [--force] [--prototype]\n  saasharness bootstrap <contract-directory> --out <directory> [--provider <provider>] [--profile <core|lifecycle|all>] [--force] [--prototype] --execute\n  saasharness risk <changed-path> [more paths...]\n\n  saasharness upstreams sync <project-directory> [--profile <core|lifecycle|all>] [--name <upstream>] [--execute]\n  saasharness upstreams doctor <project-directory> [--profile <core|lifecycle|all>] [--name <upstream>]\n  saasharness upstreams install <project-directory> <name> [--provider <provider>] [--execute]\n\n  saasharness agent init <project-directory> [--provider <provider>] [--force]\n  saasharness run <project-directory> [--stage <stage>] [--agent-config <file>] [--execute]\n\n  saasharness workflow status <project-directory>\n  saasharness workflow packet <project-directory> <stage>\n  saasharness workflow record <project-directory> <stage> <channel> --report <report.json>\n  saasharness workflow evaluate <project-directory> <stage>\n  saasharness workflow revise <project-directory> <stage>\n  saasharness workflow approve <project-directory> <stage> --by <human>\n\n  saasharness integrations list\n  saasharness integrations install <name> [--provider <provider>] [--project <directory>] [--execute]\n`;
+const HELP = `SaaS Harness v0.5\n\nUsage:\n  saasharness init <directory> [--name <slug>]\n  saasharness validate <contract-directory>\n  saasharness plan <contract-directory> [--prototype]\n  saasharness assemble <contract-directory> --out <directory> [--force] [--prototype]\n  saasharness bootstrap <contract-directory> --out <directory> [--provider <provider>] [--profile <core|lifecycle|all>] [--force] [--prototype] --execute\n  saasharness risk <changed-path> [more paths...]\n\n  saasharness design status <project-directory>\n  saasharness design list-themes <project-directory>\n  saasharness design select-theme <project-directory> <theme-id> --by <human>\n\n  saasharness upstreams sync <project-directory> [--profile <core|lifecycle|all>] [--name <upstream>] [--execute]\n  saasharness upstreams doctor <project-directory> [--profile <core|lifecycle|all>] [--name <upstream>]\n  saasharness upstreams install <project-directory> <name> [--provider <provider>] [--execute]\n\n  saasharness agent init <project-directory> [--provider <provider>] [--force]\n  saasharness run <project-directory> [--stage <stage>] [--agent-config <file>] [--execute]\n\n  saasharness workflow status <project-directory>\n  saasharness workflow packet <project-directory> <stage>\n  saasharness workflow record <project-directory> <stage> <channel> --report <report.json>\n  saasharness workflow evaluate <project-directory> <stage>\n  saasharness workflow revise <project-directory> <stage>\n  saasharness workflow approve <project-directory> <stage> --by <human>\n\n  saasharness integrations list\n  saasharness integrations install <name> [--provider <provider>] [--project <directory>] [--execute]\n`;
 
 function option(args, name) {
   const index = args.indexOf(name);
@@ -90,6 +91,25 @@ async function runWorkflow(rest) {
     return;
   }
   throw new Error(`unknown workflow action: ${action ?? '<missing>'}`);
+}
+
+async function runDesign(rest) {
+  const [action, projectDir, themeId] = rest;
+  if (!projectDir) throw new Error(`design ${action ?? '<action>'} requires a project directory`);
+  if (action === 'status') {
+    console.log(JSON.stringify(await designStatus(projectDir), null, 2));
+    return;
+  }
+  if (action === 'list-themes') {
+    console.log(JSON.stringify(await readThemeCatalog(projectDir), null, 2));
+    return;
+  }
+  if (action === 'select-theme') {
+    if (!themeId) throw new Error('design select-theme requires <project-directory> <theme-id> --by <human>');
+    console.log(JSON.stringify(await selectTheme(projectDir, themeId, option(rest, '--by')), null, 2));
+    return;
+  }
+  throw new Error(`unknown design action: ${action ?? '<missing>'}`);
 }
 
 async function runIntegrations(rest) {
@@ -194,6 +214,10 @@ export async function runCli(args) {
   if (command === 'risk') {
     if (rest.length === 0) throw new Error('risk requires changed paths');
     console.log(JSON.stringify(routeRisk(rest), null, 2));
+    return;
+  }
+  if (command === 'design') {
+    await runDesign(rest);
     return;
   }
   if (command === 'upstreams') {
