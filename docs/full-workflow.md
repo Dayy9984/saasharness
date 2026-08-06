@@ -8,7 +8,7 @@ saasharness init ./contracts --name my-product
 
 The product owner and coding agent complete `product.yml`. Market, pricing, entitlement, privacy, and product intent remain human-owned. Low-level infrastructure is resolved after product approval.
 
-New projects receive UX contract version 3, which explicitly separates design philosophy, theme exploration, and the real mock-data prototype.
+The UX contract explicitly separates a lightweight UI foundation, practical treatment comparison, and the complete mock-data prototype.
 
 ## 2. Bootstrap from pinned GitHub bases
 
@@ -29,7 +29,7 @@ The executable bootstrap:
 4. checks out the selected upstream profile into `.saasharness/sources/`;
 5. runs the official Spec Kit initializer with the included B2C preset;
 6. installs the pinned Impeccable project integration;
-7. installs, audits, builds, unit-tests, and browser-tests the generated project;
+7. installs, audits, builds, unit-tests, and browser-smoke-tests the generated project;
 8. records source commits and runs the upstream doctor.
 
 ## 3. Configure the coding-agent processes
@@ -73,7 +73,7 @@ For each stage the runner:
 1. reads human-owned contracts and workflow state;
 2. generates a prompt naming the canonical local upstream checkouts;
 3. invokes a fresh builder process;
-4. runs stage verification;
+4. runs focused stage verification;
 5. creates the mandatory critic packet;
 6. invokes one isolated critic process per channel;
 7. validates each JSON report;
@@ -87,18 +87,23 @@ Canonical base: GitHub Spec Kit.
 
 Outputs include product constitution, clarified requirements, product specification, policy decisions, assumptions, and unresolved questions. `contracts/product.yml` and Spec Kit artifacts must remain consistent.
 
-## 6. UX stage A — design philosophy
+## 6. UX stage A — lightweight B2C UI foundation
 
 Canonical bases: Open Design, Pro UI Engineering, and Impeccable.
 
-The product owner and agent discuss the design philosophy before components. The root `SOUL.md` captures:
+The default is a clean, highly legible, conventional B2C SaaS interface. The human discussion only resolves product-specific choices:
 
-- product essence and emotional promise;
-- audience, context, trust, accessibility, and regional considerations;
-- design principles with positive and negative rules;
-- typography, color, shape, density, surface, icon, illustration, and image grammar;
-- spring-motion, interruption, latency disclosure, and reduced-motion philosophy;
-- references, anti-references, and component constitution.
+- character and warmth;
+- information density;
+- surface treatment;
+- solid or selectively glass-like controls;
+- accent role;
+- spring-motion character;
+- trust, accessibility, and regional considerations.
+
+Root `SOUL.md` records these decisions and the reusable-component rules. It is intentionally short and is not a branding manifesto.
+
+Reference principles may be learned from Apple, Linear, Miro, Stripe, and Notion without copying their identity.
 
 Required critics:
 
@@ -107,25 +112,38 @@ product-fit
 + design-coherence
 ```
 
-Approval is blocked if `SOUL.md` is absent.
-
 ```bash
 saasharness run . --stage ux-philosophy --execute
 saasharness workflow approve . ux-philosophy --by "product-owner"
 ```
 
-## 7. UX stage B — Pinterest research and 15-theme exploration
+## 7. UX stage B — public research and 15 practical treatments
 
-Pinterest is used through authorized browser research. The workflow forbids automatic scraping and source-asset copying.
+Pinterest and other public sources may be used through authorized browser research. The workflow forbids automated scraping and source-asset copying.
 
-Store in `artifacts/02-ux/pinterest-research.yml`:
+Record:
 
-- Pin, Board, or search URL;
+- reviewed URL or search URL;
 - visible attribution where available;
-- abstract observations about layout, type, palette, texture, shape, density, interaction, and motion;
+- abstract observations about hierarchy, controls, surfaces, density, radius, focus, accent, motion, and trust;
 - explicit `do_not_copy` notes.
 
-Generate exactly 15 materially different systems for the same neutral canonical screen. This phase contains no realistic product mock data.
+Generate exactly 15 practical treatments of the same standard B2C SaaS screen. Every candidate keeps the same IA, layout, neutral content, and user flow. Only useful component treatment varies.
+
+Allowed axes include:
+
+```text
+button material
+selected glass controls
+surface depth
+density
+radius
+accent
+focus
+motion intent
+```
+
+Novelty directions such as neon, brutalist, game-like, or purely artistic themes are excluded unless explicitly required by the product category.
 
 Routes:
 
@@ -138,11 +156,9 @@ Required critics:
 
 ```text
 research-integrity
-+ theme-diversity
++ treatment-usefulness
 + browser-evidence
 ```
-
-Human approval is explicit:
 
 ```bash
 saasharness design status .
@@ -151,11 +167,9 @@ saasharness design select-theme . <theme-id> --by "product-owner"
 saasharness workflow approve . ux-themes --by "product-owner"
 ```
 
-The source-controlled selection is required before the prototype stage.
+## 8. UX stage C — complete modular React mock-data prototype
 
-## 8. UX stage C — modular React mock-data prototype
-
-Using the approved `SOUL.md` and selected theme, the harness builds:
+Using approved `SOUL.md` and the selected treatment, the harness builds:
 
 - semantic tokens;
 - reusable primitives and patterns;
@@ -163,7 +177,7 @@ Using the approved `SOUL.md` and selected theme, the harness builds:
 - page composition;
 - IA and primary/recovery journeys;
 - screen contracts;
-- realistic mock data;
+- every required page with realistic mock data;
 - loading, empty, error, permission, paid-limit, long-content, retry, delayed-success, interruption, responsive, and reduced-motion behavior.
 
 The running prototype is at:
@@ -171,6 +185,8 @@ The running prototype is at:
 ```text
 /__ux/prototype
 ```
+
+Human review owns visual quality and responsive completion. Automated browser verification is limited to lightweight route and interaction smoke; the harness does not impose a 390/1440/1920 matrix, screenshot gate, or visual-score optimization loop.
 
 Required critics:
 
@@ -210,27 +226,27 @@ Preview
 
 ## 12. Tetris pilot
 
-The CI virtual environment exercises the new UX lifecycle with a simple playable falling-block game:
+The CI virtual environment exercises the workflow with a simple playable falling-block game:
 
 ```text
-approved product/UX/feature contracts
-→ SOUL.md
-→ 15-theme gallery
-→ explicit neon-arcade theme approval
+approved contracts
+→ lightweight SOUL.md
+→ 15 clean treatment variants
+→ explicit apple-glass-controls selection
 → modular React Tetris
-→ engine unit test
-→ browser theme-gallery journey
+→ engine unit tests
+→ browser gallery smoke
 → browser move / rotate / hard-drop / restart journey
 ```
 
-The pilot records public Pinterest reference URLs and abstract observations. It does not claim a live authenticated Pinterest review; that remains a real human-research responsibility.
+The pilot deliberately does not use screenshot artifacts or fixed viewport gates. It validates harness flow and functionality, not subjective UI quality.
 
 ## 13. Manual critic controls
 
 ```bash
 saasharness workflow packet . ux-themes
 saasharness workflow record . ux-themes research-integrity --report ./research.json
-saasharness workflow record . ux-themes theme-diversity --report ./diversity.json
+saasharness workflow record . ux-themes treatment-usefulness --report ./treatment.json
 saasharness workflow record . ux-themes browser-evidence --report ./browser.json
 saasharness workflow evaluate . ux-themes
 saasharness workflow revise . ux-themes
