@@ -27,6 +27,28 @@ function requireApproval(contract, label, errors) {
   requireString(contract.approval?.approved_by, `${label}.approval.approved_by`, errors);
 }
 
+function validateUxDesignLifecycle(ux, strict, errors, warnings) {
+  const checks = [
+    ['ux.design_philosophy.status', ux.design_philosophy?.status],
+    ['ux.theme_exploration.status', ux.theme_exploration?.status],
+    ['ux.theme_selection.status', ux.theme_selection?.status],
+    ['ux.react_mock.status', ux.react_mock?.status],
+  ];
+  for (const [label, status] of checks) {
+    if (status === 'approved') continue;
+    if (strict) errors.push(`${label} must be approved before strict assembly`);
+    else warnings.push(`${label} is not approved; stay in the React UX workflow`);
+  }
+  const count = ux.theme_exploration?.candidate_count;
+  if (count !== 15) {
+    if (strict) errors.push('ux.theme_exploration.candidate_count must be exactly 15');
+    else warnings.push('theme exploration must produce exactly 15 same-screen variants before selection');
+  }
+  if (ux.theme_exploration?.automated_scraping && ux.theme_exploration.automated_scraping !== 'forbidden') {
+    errors.push('ux.theme_exploration.automated_scraping must be forbidden');
+  }
+}
+
 export async function loadContracts(contractDir) {
   const entries = await Promise.all(
     Object.entries(CONTRACT_FILES).map(async ([key, fileName]) => {
@@ -63,11 +85,12 @@ export function validateContracts(contracts, options = {}) {
   if (!Array.isArray(ux.primary_journey?.states) || ux.primary_journey.states.length === 0) {
     errors.push('ux.primary_journey.states must be a non-empty list');
   }
+  if (ux.design_philosophy?.soul_file !== 'SOUL.md') {
+    warnings.push('SOUL.md should be the canonical design-philosophy source');
+  }
+  validateUxDesignLifecycle(ux, requiredApprovals.has('ux'), errors, warnings);
   if (ux.usability_evidence?.status !== 'validated') {
     warnings.push('target-user usability evidence is not validated; product-owner approval is not usability proof');
-  }
-  if (ux.react_mock?.status !== 'approved') {
-    warnings.push('React UX mock is not approved yet; use prototype assembly and complete the ux-ia stage');
   }
 
   requireString(feature.id, 'feature.id', errors);
