@@ -28,6 +28,10 @@ function requireApproval(contract, label, errors) {
 }
 
 function validateUxDesignLifecycle(ux, strict, errors, warnings) {
+  if ((ux.version ?? 1) < 3) {
+    warnings.push('legacy UX contract detected; migrate to the SOUL → 15 themes → prototype lifecycle');
+    return;
+  }
   const checks = [
     ['ux.design_philosophy.status', ux.design_philosophy?.status],
     ['ux.theme_exploration.status', ux.theme_exploration?.status],
@@ -85,7 +89,7 @@ export function validateContracts(contracts, options = {}) {
   if (!Array.isArray(ux.primary_journey?.states) || ux.primary_journey.states.length === 0) {
     errors.push('ux.primary_journey.states must be a non-empty list');
   }
-  if (ux.design_philosophy?.soul_file !== 'SOUL.md') {
+  if ((ux.version ?? 1) >= 3 && ux.design_philosophy?.soul_file !== 'SOUL.md') {
     warnings.push('SOUL.md should be the canonical design-philosophy source');
   }
   validateUxDesignLifecycle(ux, requiredApprovals.has('ux'), errors, warnings);
