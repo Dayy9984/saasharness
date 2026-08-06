@@ -20,7 +20,7 @@ export function starterFiles(plan, contractRaw) {
       check: 'tsc -b && vite build && wrangler deploy --dry-run',
       test: 'vitest run --config vitest.config.ts',
     },
-    dependencies: { hono: '4.11.1', react: '19.2.1', 'react-dom': '19.2.1' },
+    dependencies: { hono: '4.13.0', react: '19.2.1', 'react-dom': '19.2.1' },
     devDependencies: {
       '@cloudflare/vite-plugin': '1.15.3',
       '@types/node': '24.10.1',
