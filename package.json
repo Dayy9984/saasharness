@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "node --test",
-    "check:syntax": "node --check bin/saasharness.js && node --check src/cli.js && node --check src/contracts.js && node --check src/yaml-lite.js && node --check src/resolver.js && node --check src/registry.js && node --check src/assembler.js && node --check src/risk-router.js && node --check src/fs-utils.js && node --check src/starter-files.js && node --check src/critic.js && node --check src/workflow.js && node --check src/artifact-templates.js && node --check src/integrations.js && node --check src/platform-templates.js",
+    "check:syntax": "node --check bin/saasharness.js && node --check src/cli.js && node --check src/contracts.js && node --check src/yaml-lite.js && node --check src/resolver.js && node --check src/registry.js && node --check src/assembler.js && node --check src/risk-router.js && node --check src/fs-utils.js && node --check src/starter-files.js && node --check src/critic.js && node --check src/workflow.js && node --check src/artifact-templates.js && node --check src/integrations.js && node --check src/platform-config.js",
     "check": "npm run check:syntax && npm test",
     "smoke": "node ./bin/saasharness.js --help"
   },
