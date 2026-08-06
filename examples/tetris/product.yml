@@ -1,0 +1,20 @@
+version: 1
+name: falling-blocks-pilot
+region: global
+targets: [web]
+monetization: free
+capabilities:
+  background_jobs: false
+  file_uploads: false
+  email: false
+  realtime: false
+platform:
+  preferred: cloudflare
+  database: auto
+  expected_scale: small
+  relational_complexity: low
+  strict_consistency: false
+  write_heavy: false
+approval:
+  status: approved
+  approved_by: tetris-pilot
