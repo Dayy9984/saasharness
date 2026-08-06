@@ -13,13 +13,14 @@ import {
   approveStage,
 } from './workflow.js';
 import { listIntegrations, installIntegration } from './integrations.js';
+import { installPinnedIntegration } from './upstream-installers.js';
 import { bootstrapProject } from './bootstrap.js';
 import { doctorUpstreams, syncUpstreams } from './upstream-workspace.js';
 import { runStageLoop, writeAgentConfig } from './orchestrator.js';
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-const HELP = `SaaS Harness v0.4\n\nUsage:\n  saasharness init <directory> [--name <slug>]\n  saasharness validate <contract-directory>\n  saasharness plan <contract-directory> [--prototype]\n  saasharness assemble <contract-directory> --out <directory> [--force] [--prototype]\n  saasharness bootstrap <contract-directory> --out <directory> [--provider <provider>] [--profile <core|lifecycle|all>] [--force] [--prototype] --execute\n  saasharness risk <changed-path> [more paths...]\n\n  saasharness upstreams sync <project-directory> [--profile <core|lifecycle|all>] [--name <upstream>] [--execute]\n  saasharness upstreams doctor <project-directory> [--profile <core|lifecycle|all>] [--name <upstream>]\n\n  saasharness agent init <project-directory> [--provider <provider>] [--force]\n  saasharness run <project-directory> [--stage <stage>] [--agent-config <file>] [--execute]\n\n  saasharness workflow status <project-directory>\n  saasharness workflow packet <project-directory> <stage>\n  saasharness workflow record <project-directory> <stage> <channel> --report <report.json>\n  saasharness workflow evaluate <project-directory> <stage>\n  saasharness workflow revise <project-directory> <stage>\n  saasharness workflow approve <project-directory> <stage> --by <human>\n\n  saasharness integrations list\n  saasharness integrations install <name> [--provider <provider>] [--project <directory>] [--execute]\n`;
+const HELP = `SaaS Harness v0.4\n\nUsage:\n  saasharness init <directory> [--name <slug>]\n  saasharness validate <contract-directory>\n  saasharness plan <contract-directory> [--prototype]\n  saasharness assemble <contract-directory> --out <directory> [--force] [--prototype]\n  saasharness bootstrap <contract-directory> --out <directory> [--provider <provider>] [--profile <core|lifecycle|all>] [--force] [--prototype] --execute\n  saasharness risk <changed-path> [more paths...]\n\n  saasharness upstreams sync <project-directory> [--profile <core|lifecycle|all>] [--name <upstream>] [--execute]\n  saasharness upstreams doctor <project-directory> [--profile <core|lifecycle|all>] [--name <upstream>]\n  saasharness upstreams install <project-directory> <name> [--provider <provider>] [--execute]\n\n  saasharness agent init <project-directory> [--provider <provider>] [--force]\n  saasharness run <project-directory> [--stage <stage>] [--agent-config <file>] [--execute]\n\n  saasharness workflow status <project-directory>\n  saasharness workflow packet <project-directory> <stage>\n  saasharness workflow record <project-directory> <stage> <channel> --report <report.json>\n  saasharness workflow evaluate <project-directory> <stage>\n  saasharness workflow revise <project-directory> <stage>\n  saasharness workflow approve <project-directory> <stage> --by <human>\n\n  saasharness integrations list\n  saasharness integrations install <name> [--provider <provider>] [--project <directory>] [--execute]\n`;
 
 function option(args, name) {
   const index = args.indexOf(name);
@@ -108,7 +109,7 @@ async function runIntegrations(rest) {
 }
 
 async function runUpstreams(rest) {
-  const [action, projectDir] = rest;
+  const [action, projectDir, name] = rest;
   if (!projectDir) throw new Error(`upstreams ${action ?? '<action>'} requires a project directory`);
   const config = {
     profile: option(rest, '--profile') ?? 'core',
@@ -120,6 +121,16 @@ async function runUpstreams(rest) {
   }
   if (action === 'doctor') {
     console.log(JSON.stringify(await doctorUpstreams(projectDir, config), null, 2));
+    return;
+  }
+  if (action === 'install') {
+    if (!name) throw new Error('upstreams install requires <project-directory> <name>');
+    console.log(JSON.stringify(await installPinnedIntegration(
+      name,
+      projectDir,
+      option(rest, '--provider') ?? 'codex',
+      rest.includes('--execute'),
+    ), null, 2));
     return;
   }
   throw new Error(`unknown upstreams action: ${action ?? '<missing>'}`);
