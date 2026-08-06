@@ -1,0 +1,25 @@
+version: 1
+status: draft
+method: authorized-browser-research
+source: pinterest
+policy:
+  automated_scraping: forbidden
+  copy_original_assets: forbidden
+  store_urls_and_observations_only: true
+  preserve_creator_attribution: true
+canonical_screen:
+  purpose: compare visual systems using the same neutral content skeleton
+  real_mock_data: false
+search_clusters: []
+references: []
+# Each reference should contain:
+# - url: Pinterest Pin, Board, or search URL
+# - creator_or_board: visible attribution when available
+# - observed: [layout, typography, palette, texture, interaction, motion]
+# - use: abstract principle only
+# - do_not_copy: original image, logo, illustration, brand asset, exact composition
+candidate_requirements:
+  count: 15
+  minimum_material_differences: [layout, typography, palette, shape, density, texture, motion]
+  hue_swaps_do_not_count: true
+  same_screen_structure: true
