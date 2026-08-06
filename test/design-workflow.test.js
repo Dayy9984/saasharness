@@ -6,7 +6,7 @@ import { assembleProject } from '../src/assembler.js';
 import { designStatus, readThemeCatalog, selectTheme } from '../src/design-workflow.js';
 import { tempDir, writeContracts } from '../test-support/helpers.js';
 
-test('generated UX lab contains exactly fifteen unique design-only themes', async () => {
+test('generated UX lab contains exactly fifteen unique clean B2C treatments', async () => {
   const root = await tempDir();
   const contracts = path.join(root, 'contracts');
   const output = path.join(root, 'generated');
@@ -16,22 +16,23 @@ test('generated UX lab contains exactly fifteen unique design-only themes', asyn
   assert.equal(themes.length, 15);
   assert.equal(new Set(themes.map((theme) => theme.id)).size, 15);
   assert.ok(themes.every((theme) => theme.pinterestQueries.length > 0));
+  assert.ok(themes.every((theme) => theme.buttonTreatment && theme.surfaceTreatment));
   await access(path.join(output, 'SOUL.md'));
 });
 
-test('production theme selection rejects unreviewed Pinterest evidence', async () => {
+test('production treatment selection rejects unreviewed public research evidence', async () => {
   const root = await tempDir();
   const contracts = path.join(root, 'contracts');
   const output = path.join(root, 'generated');
   await writeContracts(contracts);
   await assembleProject(contracts, output);
   await assert.rejects(
-    () => selectTheme(output, 'neon-arcade', 'owner'),
+    () => selectTheme(output, 'apple-glass-controls', 'owner'),
     /human-reviewed|at least five traceable Pinterest URLs/,
   );
 });
 
-test('pilot theme selection is explicit, human-attributed, and source controlled without claiming live research', async () => {
+test('pilot treatment selection is explicit, human-attributed, and source controlled without claiming live research', async () => {
   const root = await tempDir();
   const contracts = path.join(root, 'contracts');
   const output = path.join(root, 'generated');
@@ -39,9 +40,9 @@ test('pilot theme selection is explicit, human-attributed, and source controlled
   await assembleProject(contracts, output);
   const before = await designStatus(output);
   assert.equal(before.selection, null);
-  const result = await selectTheme(output, 'neon-arcade', 'owner', { pilot: true });
-  assert.equal(result.themeId, 'neon-arcade');
+  const result = await selectTheme(output, 'apple-glass-controls', 'owner', { pilot: true });
+  assert.equal(result.themeId, 'apple-glass-controls');
   assert.equal(result.status, 'pilot-approved');
   const selection = await readFile(path.join(output, 'src/react/ux-lab/theme-selection.ts'), 'utf8');
-  assert.match(selection, /neon-arcade/);
+  assert.match(selection, /apple-glass-controls/);
 });
