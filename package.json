@@ -1,0 +1,27 @@
+{
+  "name": "saasharness",
+  "version": "0.1.0",
+  "description": "Lean B2C SaaS starter assembler for React and Cloudflare",
+  "type": "module",
+  "bin": {
+    "saasharness": "./bin/saasharness.js"
+  },
+  "scripts": {
+    "test": "node --test",
+    "check:syntax": "node --check bin/saasharness.js && node --check src/cli.js && node --check src/contracts.js && node --check src/yaml-lite.js && node --check src/resolver.js && node --check src/registry.js && node --check src/assembler.js && node --check src/risk-router.js && node --check src/fs-utils.js && node --check src/starter-files.js",
+    "check": "npm run check:syntax && npm test",
+    "smoke": "node ./bin/saasharness.js --help"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "license": "MIT",
+  "files": [
+    "bin",
+    "src",
+    "templates",
+    "docs",
+    "AGENTS.md",
+    "README.md"
+  ]
+}

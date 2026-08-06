@@ -1,0 +1,9 @@
+version: 1
+id: feature-first-value
+name: Deliver first value
+risk: auto
+touches: [ui, api, domain, db]
+acceptance: [user-completes-primary-journey, error-state-is-recoverable]
+approval:
+  status: draft
+  approved_by: product-owner

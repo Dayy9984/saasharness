@@ -1,0 +1,15 @@
+version: 1
+primary_journey:
+  id: first-value
+  goal: User reaches the product's first meaningful value
+  entry: landing
+  success: value-delivered
+  states: [loading, empty, error, success]
+motion:
+  system: spring
+  reduced_motion: required
+usability_evidence:
+  status: not-validated
+approval:
+  status: draft
+  approved_by: product-owner

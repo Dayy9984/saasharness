@@ -1,0 +1,24 @@
+version: 1
+name: __PRODUCT_NAME__
+region: kr
+targets: [web]
+monetization: subscription-plus-credits
+capabilities:
+  background_jobs: true
+  file_uploads: false
+  email: true
+  realtime: false
+identity:
+  providers: [kakao]
+payment:
+  provider: unset
+platform:
+  preferred: cloudflare
+  database: auto
+  expected_scale: small
+  relational_complexity: low
+  strict_consistency: false
+  write_heavy: false
+approval:
+  status: draft
+  approved_by: product-owner
