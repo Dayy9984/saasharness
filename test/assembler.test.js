@@ -13,11 +13,29 @@ test('assembler creates deterministic web-only Cloudflare workspace', async () =
   const result = await assembleProject(contracts, output);
   assert.equal(result.plan.product.targets.includes('web'), true);
   await access(path.join(output, 'src/react/App.tsx'));
+  await access(path.join(output, 'src/react/ux-lab/UxLab.tsx'));
   await access(path.join(output, 'src/worker/index.ts'));
   await access(path.join(output, 'wrangler.jsonc'));
   await assert.rejects(() => access(path.join(output, 'mobile')));
   const lock = await readJson(path.join(output, 'module-lock.json'));
   assert.equal(lock.starter, 'b2c-react-cloudflare@0.1.0');
+});
+
+test('assembler installs workflow artifacts and universal skills', async () => {
+  const root = await tempDir();
+  const contracts = path.join(root, 'contracts');
+  const output = path.join(root, 'generated');
+  await writeContracts(contracts);
+  await assembleProject(contracts, output);
+  await access(path.join(output, '.saasharness/workflow.json'));
+  await access(path.join(output, '.saasharness/critic-policy.json'));
+  await access(path.join(output, 'artifacts/01-product/prd.md'));
+  await access(path.join(output, 'artifacts/02-ux/ia.md'));
+  await access(path.join(output, 'artifacts/03-architecture/db-model.md'));
+  await access(path.join(output, 'artifacts/04-plan/tasks.md'));
+  await access(path.join(output, '.agents/skills/b2c-critic/SKILL.md'));
+  const policy = await readJson(path.join(output, '.saasharness/critic-policy.json'));
+  assert.deepEqual(policy['ux-ia'].channels, ['experience', 'design', 'browser-evidence']);
 });
 
 test('generated UI visibly warns when provider adapters block production', async () => {

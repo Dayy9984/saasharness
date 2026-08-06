@@ -43,3 +43,8 @@ export async function copyFile(source, destination) {
   await ensureDir(path.dirname(destination));
   await cp(source, destination);
 }
+
+export async function copyDirectory(source, destination) {
+  await ensureDir(path.dirname(destination));
+  await cp(source, destination, { recursive: true });
+}

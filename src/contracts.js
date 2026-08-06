@@ -16,6 +16,10 @@ function requireString(value, label, errors) {
   if (typeof value !== 'string' || value.trim() === '') errors.push(`${label} must be a non-empty string`);
 }
 
+function approvalStatus(contract) {
+  return contract.approval?.status ?? 'missing';
+}
+
 function requireApproval(contract, label, errors) {
   if (!contract.approval || contract.approval.status !== 'approved') {
     errors.push(`${label}.approval.status must be approved`);
@@ -36,10 +40,11 @@ export async function loadContracts(contractDir) {
   return Object.fromEntries(entries.map(([key, parsed, raw]) => [key, { parsed, raw }]));
 }
 
-export function validateContracts(contracts) {
+export function validateContracts(contracts, options = {}) {
   const product = contracts.product.parsed;
   const ux = contracts.ux.parsed;
   const feature = contracts.feature.parsed;
+  const requiredApprovals = new Set(options.requiredApprovals ?? ['product', 'ux', 'feature']);
   const errors = [];
   const warnings = [];
 
@@ -49,26 +54,31 @@ export function validateContracts(contracts) {
   if (!Array.isArray(product.targets) || product.targets.length === 0) errors.push('product.targets must contain web');
   else {
     const unsupported = product.targets.filter((target) => !TARGETS.has(target));
-    if (unsupported.length) errors.push(`unsupported targets in v0.1: ${unsupported.join(', ')}`);
+    if (unsupported.length) errors.push(`unsupported targets in v0.2: ${unsupported.join(', ')}`);
     if (!product.targets.includes('web')) errors.push('product.targets must include web');
   }
-  requireApproval(product, 'product', errors);
 
   requireString(ux.primary_journey?.id, 'ux.primary_journey.id', errors);
   requireString(ux.primary_journey?.goal, 'ux.primary_journey.goal', errors);
   if (!Array.isArray(ux.primary_journey?.states) || ux.primary_journey.states.length === 0) {
     errors.push('ux.primary_journey.states must be a non-empty list');
   }
-  requireApproval(ux, 'ux', errors);
   if (ux.usability_evidence?.status !== 'validated') {
     warnings.push('target-user usability evidence is not validated; product-owner approval is not usability proof');
+  }
+  if (ux.react_mock?.status !== 'approved') {
+    warnings.push('React UX mock is not approved yet; use prototype assembly and complete the ux-ia stage');
   }
 
   requireString(feature.id, 'feature.id', errors);
   requireString(feature.name, 'feature.name', errors);
   if (!Array.isArray(feature.touches) || feature.touches.length === 0) errors.push('feature.touches must be a non-empty list');
   if (!Array.isArray(feature.acceptance) || feature.acceptance.length === 0) errors.push('feature.acceptance must be a non-empty list');
-  requireApproval(feature, 'feature', errors);
+
+  for (const [label, contract] of [['product', product], ['ux', ux], ['feature', feature]]) {
+    if (requiredApprovals.has(label)) requireApproval(contract, label, errors);
+    else if (approvalStatus(contract) !== 'approved') warnings.push(`${label} is still draft; the workflow must obtain human approval before implementation`);
+  }
 
   return { ok: errors.length === 0, errors, warnings };
 }

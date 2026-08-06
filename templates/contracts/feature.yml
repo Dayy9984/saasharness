@@ -1,9 +1,15 @@
-version: 1
+version: 2
 id: feature-first-value
 name: Deliver first value
 risk: auto
+non_goals: []
 touches: [ui, api, domain, db]
-acceptance: [user-completes-primary-journey, error-state-is-recoverable]
+acceptance:
+  - user-completes-primary-journey
+  - error-state-is-recoverable
+latency_class: synchronous
+critic:
+  required: true
 approval:
   status: draft
   approved_by: product-owner

@@ -1,15 +1,36 @@
-version: 1
+version: 2
 primary_journey:
   id: first-value
   goal: User reaches the product's first meaningful value
   entry: landing
   success: value-delivered
-  states: [loading, empty, error, success]
+  states: [loading, empty, error, success, permission, paid-limit]
+
+ia:
+  top_level_objects: []
+  primary_navigation: []
+  recovery_paths: []
+
+design:
+  references: []
+  anti_references: []
+  product_character: ""
+  density: standard
+
 motion:
   system: spring
+  tokens: [instant, snappy, smooth, gentle]
   reduced_motion: required
+
+react_mock:
+  route: /__ux
+  status: draft
+  fixture_states: [ready, loading, empty, error, paid-limit]
+
 usability_evidence:
   status: not-validated
+  source: none
+
 approval:
   status: draft
   approved_by: product-owner
