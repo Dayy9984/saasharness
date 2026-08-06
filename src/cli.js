@@ -2,6 +2,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { assembleProject, buildPlan } from './assembler.js';
+import { writeAgentConfig } from './agent-config.js';
 import { ensureDir, exists, readUtf8, writeUtf8 } from './fs-utils.js';
 import { routeRisk } from './risk-router.js';
 import {
@@ -16,7 +17,7 @@ import { listIntegrations, installIntegration } from './integrations.js';
 import { installPinnedIntegration } from './upstream-installers.js';
 import { bootstrapProject } from './bootstrap.js';
 import { doctorUpstreams, syncUpstreams } from './upstream-workspace.js';
-import { runStageLoop, writeAgentConfig } from './orchestrator.js';
+import { runStageLoop } from './orchestrator.js';
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
