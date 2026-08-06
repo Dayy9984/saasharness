@@ -1,0 +1,59 @@
+version: 3
+primary_journey:
+  id: first-value
+  goal: User reaches the product's first meaningful value
+  entry: landing
+  success: value-delivered
+  states: [loading, empty, error, success, permission, paid-limit]
+
+ia:
+  top_level_objects: []
+  primary_navigation: []
+  recovery_paths: []
+
+design_philosophy:
+  soul_file: SOUL.md
+  status: draft
+  principles: []
+  references: []
+  anti_references: []
+
+theme_exploration:
+  source: pinterest
+  research_method: authorized-browser-research
+  automated_scraping: forbidden
+  candidate_count: 15
+  canonical_screen: neutral-design-only
+  realistic_mock_data: false
+  gallery_route: /__ux/themes
+  status: draft
+
+theme_selection:
+  theme_id: ""
+  status: draft
+  approval_artifact: artifacts/02-ux/theme-selection.yml
+
+design:
+  product_character: ""
+  density: standard
+  component_system: modular
+  source_of_truth: SOUL.md
+
+motion:
+  system: spring
+  tokens: [instant, snappy, smooth, gentle]
+  reduced_motion: required
+
+react_mock:
+  route: /__ux/prototype
+  status: draft
+  fixture_states: [ready, loading, empty, error, paid-limit]
+  starts_after_theme_approval: true
+
+usability_evidence:
+  status: not-validated
+  source: none
+
+approval:
+  status: draft
+  approved_by: product-owner
