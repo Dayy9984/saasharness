@@ -11,6 +11,11 @@ function base64UrlToBytes(value: string): Uint8Array {
   return Uint8Array.from(binary, (character) => character.charCodeAt(0));
 }
 
+function base64UrlToArrayBuffer(value: string): ArrayBuffer {
+  const bytes = base64UrlToBytes(value);
+  return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
+}
+
 export function randomToken(size = 32): string {
   const bytes = new Uint8Array(size);
   crypto.getRandomValues(bytes);
@@ -23,7 +28,13 @@ export async function sha256Hex(value: string): Promise<string> {
 }
 
 export async function hmacSha256Hex(secret: string, value: string): Promise<string> {
-  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  );
   const signature = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(value));
   return [...new Uint8Array(signature)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
@@ -45,8 +56,12 @@ interface Discovery {
   jwks_uri: string;
 }
 
+interface JwkWithKid extends JsonWebKey {
+  kid?: string;
+}
+
 const discoveryCache = new Map<string, Promise<Discovery>>();
-const jwksCache = new Map<string, Promise<{ keys: JsonWebKey[] }>>();
+const jwksCache = new Map<string, Promise<{ keys: JwkWithKid[] }>>();
 
 export function getDiscovery(url: string): Promise<Discovery> {
   if (!discoveryCache.has(url)) {
@@ -58,39 +73,68 @@ export function getDiscovery(url: string): Promise<Discovery> {
   return discoveryCache.get(url)!;
 }
 
-async function getJwks(url: string): Promise<{ keys: JsonWebKey[] }> {
+async function getJwks(url: string): Promise<{ keys: JwkWithKid[] }> {
   if (!jwksCache.has(url)) {
     jwksCache.set(url, fetch(url).then(async (response) => {
       if (!response.ok) throw new Error('OIDC JWKS failed: ' + response.status);
-      return await response.json() as { keys: JsonWebKey[] };
+      return await response.json() as { keys: JwkWithKid[] };
     }));
   }
   return jwksCache.get(url)!;
 }
 
-export async function verifyOidcIdToken(input: { idToken: string; discoveryUrl: string; clientId: string; nonce: string }): Promise<Record<string, unknown>> {
+export async function verifyOidcIdToken(input: {
+  idToken: string;
+  discoveryUrl: string;
+  clientId: string;
+  nonce: string;
+}): Promise<Record<string, unknown>> {
   const parts = input.idToken.split('.');
   if (parts.length !== 3) throw new Error('Invalid ID token format');
-  const header = JSON.parse(new TextDecoder().decode(base64UrlToBytes(parts[0]))) as { alg?: string; kid?: string };
-  const payload = JSON.parse(new TextDecoder().decode(base64UrlToBytes(parts[1]))) as Record<string, unknown>;
+  const header = JSON.parse(
+    new TextDecoder().decode(base64UrlToBytes(parts[0])),
+  ) as { alg?: string; kid?: string };
+  const payload = JSON.parse(
+    new TextDecoder().decode(base64UrlToBytes(parts[1])),
+  ) as Record<string, unknown>;
   if (header.alg !== 'RS256' || !header.kid) throw new Error('Unsupported ID token algorithm');
 
   const discovery = await getDiscovery(input.discoveryUrl);
   const jwks = await getJwks(discovery.jwks_uri);
   const jwk = jwks.keys.find((candidate) => candidate.kid === header.kid);
   if (!jwk) throw new Error('ID token signing key not found');
-  const key = await crypto.subtle.importKey('jwk', jwk, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['verify']);
-  const valid = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', key, base64UrlToBytes(parts[2]), new TextEncoder().encode(parts[0] + '.' + parts[1]));
+  const key = await crypto.subtle.importKey(
+    'jwk',
+    jwk,
+    { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+    false,
+    ['verify'],
+  );
+  const valid = await crypto.subtle.verify(
+    'RSASSA-PKCS1-v1_5',
+    key,
+    base64UrlToArrayBuffer(parts[2]),
+    new TextEncoder().encode(parts[0] + '.' + parts[1]),
+  );
   if (!valid) throw new Error('Invalid ID token signature');
 
   const issuer = payload.iss;
   const audience = payload.aud;
   const expiry = payload.exp;
-  if (issuer !== discovery.issuer && !(discovery.issuer === 'https://accounts.google.com' && issuer === 'accounts.google.com')) throw new Error('Invalid ID token issuer');
-  const audienceMatches = Array.isArray(audience) ? audience.includes(input.clientId) : audience === input.clientId;
+  if (
+    issuer !== discovery.issuer
+    && !(discovery.issuer === 'https://accounts.google.com' && issuer === 'accounts.google.com')
+  ) throw new Error('Invalid ID token issuer');
+  const audienceMatches = Array.isArray(audience)
+    ? audience.includes(input.clientId)
+    : audience === input.clientId;
   if (!audienceMatches) throw new Error('Invalid ID token audience');
-  if (typeof expiry !== 'number' || expiry <= Math.floor(Date.now() / 1000)) throw new Error('Expired ID token');
+  if (typeof expiry !== 'number' || expiry <= Math.floor(Date.now() / 1000)) {
+    throw new Error('Expired ID token');
+  }
   if (payload.nonce !== input.nonce) throw new Error('Invalid ID token nonce');
-  if (typeof payload.sub !== 'string' || payload.sub.length === 0) throw new Error('ID token subject missing');
+  if (typeof payload.sub !== 'string' || payload.sub.length === 0) {
+    throw new Error('ID token subject missing');
+  }
   return payload;
 }
