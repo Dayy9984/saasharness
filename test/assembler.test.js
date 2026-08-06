@@ -34,9 +34,10 @@ test('assembler installs staged design artifacts, critic workflow, and skills', 
   await access(path.join(output, 'artifacts/02-ux/theme-selection.yml'));
   await access(path.join(output, '.agents/skills/b2c-design-research/SKILL.md'));
   const policy = await readJson(path.join(output, '.saasharness/critic-policy.json'));
-  assert.deepEqual(policy['ux-themes'].channels, ['research-integrity', 'theme-diversity', 'browser-evidence']);
+  assert.deepEqual(policy['ux-themes'].channels, ['research-integrity', 'treatment-usefulness', 'browser-evidence']);
   const themes = await readJson(path.join(output, 'src/react/ux-lab/theme-catalog.json'));
   assert.equal(themes.length, 15);
+  assert.ok(themes.every((theme) => theme.buttonTreatment && theme.surfaceTreatment));
 });
 
 test('assembler ships the pinned upstream manifest and actual Spec Kit preset', async () => {
