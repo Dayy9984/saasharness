@@ -21,7 +21,8 @@ test('global free product defaults to Google without billing', async () => {
   assert.deepEqual(plan.moduleLock.adapters.identity.map((item) => item.provider), ['google']);
   assert.equal(plan.modules.includes('billing'), false);
   assert.equal(plan.moduleLock.adapters.database.provider, 'd1');
-  assert.equal(plan.productionReady, true);
+  assert.equal(plan.productionReady, false);
+  assert.ok(plan.warnings.some((warning) => warning.code === 'MODULE_PACK_NOT_HARDENED'));
 });
 
 test('database escape criteria select PostgreSQL plus Hyperdrive', async () => {
