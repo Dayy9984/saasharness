@@ -21,14 +21,37 @@ export const STAGE_RECIPES = Object.freeze({
       'Keep contracts/product.yml and the Spec Kit artifacts consistent; report conflicts instead of silently choosing one.',
     ],
   },
-  'ux-ia': {
+  'ux-philosophy': {
     upstreams: ['open-design', 'pro-ui-engineering', 'impeccable'],
-    objective: 'Produce the real IA, user journeys, screen contracts, product-specific visual system, and a running React mock with realistic B2C states.',
+    objective: 'Discuss and establish the human-approved design philosophy in root SOUL.md before any theme or component generation.',
     rules: [
-      'Use Open Design as the running design-artifact host where available; use React UX Lab as the fallback, never as a documentation-only substitute.',
-      'Use Pro UI Engineering references for candidate directions without impersonating brands or copying protected assets.',
-      'Run Impeccable and browser evidence against the running experience; source review alone cannot pass UX.',
-      'Include loading, empty, error, permission, paid-limit, long-content, interruption, retry, and reduced-motion behavior.',
+      'Interview the product owner about product essence, emotional promise, audience, trust, regional context, accessibility, visual grammar, and motion philosophy.',
+      'SOUL.md is the canonical design constitution for every later screen and component.',
+      'Record positive principles, negative principles, references, anti-references, latency disclosure, reduced motion, and forbidden decorative patterns.',
+      'Do not generate the fifteen themes or modular product pages until this stage is human-approved.',
+    ],
+  },
+  'ux-themes': {
+    upstreams: ['open-design', 'pro-ui-engineering', 'impeccable'],
+    objective: 'Research visual inspiration through authorized Pinterest browser use and render exactly 15 materially distinct versions of one neutral canonical screen for human selection.',
+    rules: [
+      'Do not automate Pinterest scraping or copy source images, illustrations, logos, brand assets, or exact compositions.',
+      'Store Pin, Board, or search URLs, visible attribution, abstract observations, and explicit do-not-copy notes in artifacts/02-ux/pinterest-research.yml.',
+      'Use the same neutral content skeleton and no realistic product mock data across all fifteen candidates.',
+      'A color or radius swap is not a distinct theme; change at least two structural dimensions such as layout, typography, density, shape, texture, hierarchy, or motion.',
+      'Render the gallery at /__ux/themes and one full preview at /__ux/themes/<theme-id>.',
+      'Run Impeccable and browser evidence against the running gallery. Human selection must be written with saasharness design select-theme.',
+    ],
+  },
+  'ux-prototype': {
+    upstreams: ['open-design', 'pro-ui-engineering', 'impeccable'],
+    objective: 'Using the approved SOUL and selected theme, produce the real IA, journeys, reusable component system, pages, and running React prototype with realistic mock data.',
+    rules: [
+      'Do not begin until artifacts/02-ux/theme-selection.yml is approved.',
+      'Derive semantic tokens, primitives, patterns, feature components, and page composition from SOUL.md and the approved theme.',
+      'Use Open Design as the running design-artifact host where available; React UX Lab remains the fallback and evidence store.',
+      'Include loading, empty, error, permission, paid-limit, long-content, interruption, retry, delayed-success, and reduced-motion behavior.',
+      'Run experience, design, and browser-evidence critics against the running mock; source review alone cannot pass UX.',
     ],
   },
   architecture: {
@@ -70,7 +93,7 @@ export const STAGE_RECIPES = Object.freeze({
 });
 
 export function stageVerificationPlan(stage) {
-  if (stage === 'ux-ia') return [
+  if (stage.startsWith('ux-')) return [
     ['npm', ['run', 'check']],
     ['npm', ['run', 'test:e2e']],
   ];
