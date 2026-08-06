@@ -15,9 +15,9 @@ export function ProductPrototype() {
       <main className="ux-shell">
         <header className="ux-heading">
           <p className="ux-eyebrow">Stage 3 · Locked</p>
-          <h1>Approve a theme before mock-data UX work</h1>
-          <p>The harness deliberately blocks components and product pages until one of the fifteen design systems is approved in source control.</p>
-          <a className="ux-back-link" href="/__ux/themes">← Review all 15 themes</a>
+          <h1>Approve a UI treatment before mock-data UX work</h1>
+          <p>The harness blocks product pages until one of the fifteen clean B2C treatments is approved in source control. The IA and user flow remain unchanged.</p>
+          <a className="ux-back-link" href="/__ux/themes">← Review all 15 treatments</a>
         </header>
         <aside className="ux-warning" role="alert">
           Run <code>saasharness design select-theme . &lt;theme-id&gt; --by "product-owner"</code>, then start the ux-prototype stage.
@@ -30,9 +30,9 @@ export function ProductPrototype() {
   return (
     <main className="ux-shell">
       <header className="ux-heading">
-        <p className="ux-eyebrow">Stage 3 · Modular React mock</p>
-        <h1>Approved-theme product prototype</h1>
-        <p>This phase uses realistic mock data and reusable components. It starts only after a theme is approved.</p>
+        <p className="ux-eyebrow">Stage 3 · Complete React mock</p>
+        <h1>Approved-treatment product prototype</h1>
+        <p>This phase uses realistic mock data and reusable components. Every required page, state, journey, and responsive behavior is completed here before production implementation.</p>
         <a className="ux-back-link" href="/__ux">← Design workflow</a>
       </header>
       <StateSwitcher states={Object.keys(fixtures) as FixtureName[]} active={fixtureName} onChange={setFixtureName} />
