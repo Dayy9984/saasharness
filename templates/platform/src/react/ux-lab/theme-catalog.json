@@ -1,0 +1,112 @@
+[
+  {
+    "id": "precision-grid",
+    "name": "Precision Grid",
+    "thesis": "Calm, exact, highly legible structure for trust-sensitive products.",
+    "pinterestQueries": ["swiss grid web ui", "editorial dashboard typography", "minimal product interface grid"],
+    "palette": ["#F5F4EF", "#111827", "#FFFFFF", "#2F6BFF", "#D7DAE2"],
+    "fontMood": "neutral grotesk",
+    "shape": "small-radius geometric",
+    "density": "compact",
+    "motion": "critically damped",
+    "background": "#F5F4EF", "surface": "#FFFFFF", "text": "#111827", "muted": "#667085", "accent": "#2F6BFF", "accent2": "#D7DAE2", "border": "#D7DAE2", "radius": "8px", "shadow": "0 16px 48px rgba(17,24,39,.08)"
+  },
+  {
+    "id": "neon-arcade", "name": "Neon Arcade", "thesis": "Energetic digital play with disciplined contrast and focused glow.",
+    "pinterestQueries": ["neon arcade interface", "cyber game ui screen", "dark neon web design"],
+    "palette": ["#070816", "#E9F1FF", "#12152B", "#7CFF6B", "#A56BFF"],
+    "fontMood": "wide display sans", "shape": "cut-corner panels", "density": "compact", "motion": "snappy elastic-light",
+    "background": "#070816", "surface": "#12152B", "text": "#E9F1FF", "muted": "#9AA7C2", "accent": "#7CFF6B", "accent2": "#A56BFF", "border": "#2A3154", "radius": "10px", "shadow": "0 0 42px rgba(124,255,107,.20)"
+  },
+  {
+    "id": "paper-play", "name": "Paper Play", "thesis": "Tactile, human, collage-like warmth without sacrificing clarity.",
+    "pinterestQueries": ["paper collage graphic design ui", "cut paper website design", "editorial collage interface"],
+    "palette": ["#F7EBD8", "#2D2724", "#FFFDF7", "#E65B3B", "#3F7C6D"],
+    "fontMood": "friendly serif plus sans", "shape": "irregular soft cards", "density": "relaxed", "motion": "gentle physical",
+    "background": "#F7EBD8", "surface": "#FFFDF7", "text": "#2D2724", "muted": "#756B64", "accent": "#E65B3B", "accent2": "#3F7C6D", "border": "#D9C7AE", "radius": "18px", "shadow": "6px 8px 0 rgba(45,39,36,.12)"
+  },
+  {
+    "id": "brutalist-console", "name": "Brutalist Console", "thesis": "Direct, uncompromising controls with visible system state.",
+    "pinterestQueries": ["brutalist web interface", "industrial control panel ui", "raw typography website"],
+    "palette": ["#E9E7DF", "#111111", "#F8F7F2", "#FF3B00", "#1C53FF"],
+    "fontMood": "monospace and condensed", "shape": "square hard edges", "density": "dense", "motion": "instant mechanical",
+    "background": "#E9E7DF", "surface": "#F8F7F2", "text": "#111111", "muted": "#555555", "accent": "#FF3B00", "accent2": "#1C53FF", "border": "#111111", "radius": "0px", "shadow": "4px 4px 0 #111111"
+  },
+  {
+    "id": "soft-toy", "name": "Soft Toy", "thesis": "Friendly, forgiving, rounded consumer experience with clear affordances.",
+    "pinterestQueries": ["soft pastel app ui", "playful rounded web design", "cute product dashboard"],
+    "palette": ["#F8F2FF", "#392F4A", "#FFFFFF", "#8B5CF6", "#FF8FB1"],
+    "fontMood": "rounded humanist sans", "shape": "pill and large radius", "density": "relaxed", "motion": "soft spring",
+    "background": "#F8F2FF", "surface": "#FFFFFF", "text": "#392F4A", "muted": "#7B6F8C", "accent": "#8B5CF6", "accent2": "#FF8FB1", "border": "#E5D8F5", "radius": "24px", "shadow": "0 18px 55px rgba(95,70,135,.15)"
+  },
+  {
+    "id": "blueprint-system", "name": "Blueprint System", "thesis": "Technical transparency and spatial logic expressed as a working diagram.",
+    "pinterestQueries": ["blueprint graphic interface", "technical schematic ui", "architecture diagram web design"],
+    "palette": ["#071F3D", "#EAF4FF", "#0B2D55", "#45B8FF", "#8CCEFF"],
+    "fontMood": "engineering sans and mono", "shape": "thin-line rectangular", "density": "compact", "motion": "measured linear-spring",
+    "background": "#071F3D", "surface": "#0B2D55", "text": "#EAF4FF", "muted": "#8CB2D5", "accent": "#45B8FF", "accent2": "#8CCEFF", "border": "#2E5C86", "radius": "4px", "shadow": "0 20px 60px rgba(0,0,0,.25)"
+  },
+  {
+    "id": "quiet-luxury", "name": "Quiet Luxury", "thesis": "Restrained premium confidence through proportion, material, and typography.",
+    "pinterestQueries": ["quiet luxury website design", "luxury editorial web ui", "minimal premium brand interface"],
+    "palette": ["#F3F0E9", "#28231E", "#FCFAF6", "#9B7B52", "#C9BBA8"],
+    "fontMood": "high-contrast serif plus clean sans", "shape": "subtle radius", "density": "spacious", "motion": "slow controlled spring",
+    "background": "#F3F0E9", "surface": "#FCFAF6", "text": "#28231E", "muted": "#756B61", "accent": "#9B7B52", "accent2": "#C9BBA8", "border": "#D9D0C2", "radius": "12px", "shadow": "0 24px 70px rgba(58,45,31,.10)"
+  },
+  {
+    "id": "retro-crt", "name": "Retro CRT", "thesis": "Nostalgic terminal energy translated into a usable modern interface.",
+    "pinterestQueries": ["retro computer interface", "crt terminal ui", "80s computer graphic design"],
+    "palette": ["#08110D", "#C7FFD8", "#0D1D15", "#65FF8A", "#FFCF5B"],
+    "fontMood": "pixel-aware monospace", "shape": "screen bezels", "density": "dense", "motion": "scanline-light spring",
+    "background": "#08110D", "surface": "#0D1D15", "text": "#C7FFD8", "muted": "#73A483", "accent": "#65FF8A", "accent2": "#FFCF5B", "border": "#28553A", "radius": "6px", "shadow": "0 0 35px rgba(101,255,138,.18)"
+  },
+  {
+    "id": "editorial-monochrome", "name": "Editorial Monochrome", "thesis": "Strong narrative hierarchy using scale, rhythm, and black-and-white contrast.",
+    "pinterestQueries": ["black white editorial website", "magazine layout web design", "typographic product landing page"],
+    "palette": ["#F4F4F1", "#101010", "#FFFFFF", "#101010", "#B8B8B2"],
+    "fontMood": "editorial serif and grotesk", "shape": "flat planes", "density": "spacious", "motion": "subtle reveal",
+    "background": "#F4F4F1", "surface": "#FFFFFF", "text": "#101010", "muted": "#666660", "accent": "#101010", "accent2": "#B8B8B2", "border": "#CFCFC9", "radius": "2px", "shadow": "0 12px 36px rgba(0,0,0,.08)"
+  },
+  {
+    "id": "glass-signal", "name": "Glass Signal", "thesis": "Layered translucent surfaces used sparingly to reveal depth and live state.",
+    "pinterestQueries": ["glassmorphism dashboard refined", "translucent interface design", "aurora glass web ui"],
+    "palette": ["#0B1020", "#F4F8FF", "#17213C", "#57D4FF", "#A76BFF"],
+    "fontMood": "modern geometric sans", "shape": "floating rounded panels", "density": "standard", "motion": "fluid depth spring",
+    "background": "#0B1020", "surface": "rgba(23,33,60,.78)", "text": "#F4F8FF", "muted": "#A9B7D3", "accent": "#57D4FF", "accent2": "#A76BFF", "border": "rgba(255,255,255,.16)", "radius": "20px", "shadow": "0 26px 80px rgba(0,0,0,.35)"
+  },
+  {
+    "id": "warm-market", "name": "Warm Market", "thesis": "Approachable commerce energy with visible trust, guidance, and human warmth.",
+    "pinterestQueries": ["warm marketplace website", "friendly ecommerce ui", "handmade shop web design"],
+    "palette": ["#FFF6E8", "#33271D", "#FFFFFF", "#D65A31", "#2E7D63"],
+    "fontMood": "warm humanist sans", "shape": "rounded cards and tags", "density": "standard", "motion": "friendly snappy",
+    "background": "#FFF6E8", "surface": "#FFFFFF", "text": "#33271D", "muted": "#7B6A5A", "accent": "#D65A31", "accent2": "#2E7D63", "border": "#ECDAC2", "radius": "16px", "shadow": "0 18px 50px rgba(83,54,31,.12)"
+  },
+  {
+    "id": "y2k-chrome", "name": "Y2K Chrome", "thesis": "Expressive metallic nostalgia constrained by contemporary information hierarchy.",
+    "pinterestQueries": ["y2k chrome graphic design ui", "metallic web interface", "futuristic 2000s website design"],
+    "palette": ["#DDE5F5", "#15182B", "#F7FAFF", "#276BFF", "#FF4EDB"],
+    "fontMood": "tech display sans", "shape": "capsules and metallic plates", "density": "compact", "motion": "springy but bounded",
+    "background": "#DDE5F5", "surface": "#F7FAFF", "text": "#15182B", "muted": "#626A85", "accent": "#276BFF", "accent2": "#FF4EDB", "border": "#AAB5CC", "radius": "22px", "shadow": "inset 0 1px 0 #fff, 0 20px 55px rgba(40,48,90,.18)"
+  },
+  {
+    "id": "calm-wellness", "name": "Calm Wellness", "thesis": "Low-arousal clarity, soft rhythm, and reassuring progress.",
+    "pinterestQueries": ["wellness app web design", "calm natural interface", "mindfulness dashboard ui"],
+    "palette": ["#EDF3EC", "#25332A", "#FAFCF8", "#5D8F6A", "#B8CDAF"],
+    "fontMood": "soft humanist sans and serif", "shape": "organic rounded", "density": "relaxed", "motion": "gentle low-frequency",
+    "background": "#EDF3EC", "surface": "#FAFCF8", "text": "#25332A", "muted": "#66756B", "accent": "#5D8F6A", "accent2": "#B8CDAF", "border": "#D2DED0", "radius": "20px", "shadow": "0 18px 50px rgba(47,76,56,.10)"
+  },
+  {
+    "id": "data-hud", "name": "Data HUD", "thesis": "Fast situational awareness with clear layers, signals, and control zones.",
+    "pinterestQueries": ["futuristic hud interface", "data visualization control ui", "sci fi dashboard web design"],
+    "palette": ["#04131C", "#D8F7FF", "#0A2532", "#00D5FF", "#FFB547"],
+    "fontMood": "condensed technical sans", "shape": "angled panels and rings", "density": "dense", "motion": "responsive instrument spring",
+    "background": "#04131C", "surface": "#0A2532", "text": "#D8F7FF", "muted": "#79A5B5", "accent": "#00D5FF", "accent2": "#FFB547", "border": "#195064", "radius": "6px", "shadow": "0 0 45px rgba(0,213,255,.16)"
+  },
+  {
+    "id": "color-block", "name": "Color Block", "thesis": "Bold modular composition with accessible, joyful visual landmarks.",
+    "pinterestQueries": ["color block web design", "bauhaus interface design", "bold geometric website ui"],
+    "palette": ["#F4EADC", "#1E1B18", "#FFFDF8", "#E73B2F", "#185ADB"],
+    "fontMood": "bold geometric sans", "shape": "large geometric modules", "density": "standard", "motion": "snappy modular",
+    "background": "#F4EADC", "surface": "#FFFDF8", "text": "#1E1B18", "muted": "#675F58", "accent": "#E73B2F", "accent2": "#185ADB", "border": "#1E1B18", "radius": "10px", "shadow": "8px 8px 0 rgba(30,27,24,.16)"
+  }
+]
