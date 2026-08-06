@@ -14,7 +14,7 @@ test('design workflow exposes the clean B2C foundation, 15 treatments, detail vi
 
   await page.goto('/__ux/prototype');
   await expect(page.getByRole('heading', {
-    name: /Approve a theme before mock-data UX work|Approved-theme product prototype/i,
+    name: /Approve a UI treatment before mock-data UX work|Approved-treatment product prototype/i,
   })).toBeVisible();
 });
 
