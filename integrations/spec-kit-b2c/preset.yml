@@ -1,0 +1,38 @@
+schema_version: "1.0"
+
+preset:
+  id: "saasharness-b2c"
+  name: "SaaS Harness B2C"
+  version: "0.1.0"
+  description: "B2C SaaS feature specs, implementation plans, and WIP=1 test-first tasks for the SaaS Harness Golden Path"
+  author: "Dayy9984"
+  repository: "https://github.com/Dayy9984/saasharness"
+  license: "MIT"
+
+requires:
+  speckit_version: ">=0.12.0"
+
+provides:
+  templates:
+    - type: "template"
+      name: "spec-template"
+      file: "templates/spec-template.md"
+      description: "B2C SaaS feature specification with product, UX, policy, latency, and critic contracts"
+      replaces: "spec-template"
+    - type: "template"
+      name: "plan-template"
+      file: "templates/plan-template.md"
+      description: "React and Cloudflare-first implementation plan using reusable product modules and provider adapters"
+      replaces: "plan-template"
+    - type: "template"
+      name: "tasks-template"
+      file: "templates/tasks-template.md"
+      description: "WIP=1, test-first, critic-reviewed B2C SaaS task plan"
+      replaces: "tasks-template"
+
+tags:
+  - "b2c-saas"
+  - "react"
+  - "cloudflare"
+  - "tdd"
+  - "human-in-the-loop"
