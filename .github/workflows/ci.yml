@@ -77,10 +77,10 @@ jobs:
         run: node ./bin/saasharness.js assemble ./examples/tetris --out ./.tmp/tetris
       - name: Apply deterministic playable pilot fixture and traceable public references
         run: node ./test/fixtures/apply-tetris-pilot.mjs ./.tmp/tetris
-      - name: Verify design workflow and explicitly approve one of fifteen themes for the pilot
+      - name: Verify design workflow and explicitly approve one clean treatment for the pilot
         run: |
           node ./bin/saasharness.js design status ./.tmp/tetris
-          node ./bin/saasharness.js design select-theme ./.tmp/tetris neon-arcade --by ci-human --pilot
+          node ./bin/saasharness.js design select-theme ./.tmp/tetris apple-glass-controls --by ci-human --pilot
       - run: npm install
         working-directory: ./.tmp/tetris
       - run: npm audit --omit=dev --audit-level=high
@@ -93,11 +93,3 @@ jobs:
         working-directory: ./.tmp/tetris
       - run: npm run test:e2e
         working-directory: ./.tmp/tetris
-      - name: Upload theme and Tetris browser evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: tetris-design-evidence
-          path: ./.tmp/tetris/artifacts/*.png
-          if-no-files-found: warn
-          retention-days: 14
