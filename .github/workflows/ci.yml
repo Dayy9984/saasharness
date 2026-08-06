@@ -27,6 +27,8 @@ jobs:
       - run: node ./bin/saasharness.js assemble ./examples/demo --out ./.tmp/demo
       - run: npm install
         working-directory: ./.tmp/demo
+      - run: npm audit --omit=dev --audit-level=high
+        working-directory: ./.tmp/demo
       - run: npm run check
         working-directory: ./.tmp/demo
       - run: npm test
