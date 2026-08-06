@@ -1,0 +1,50 @@
+version: 3
+primary_journey:
+  id: play-first-round
+  goal: User starts and plays a simple falling-block round
+  entry: landing
+  success: block-placed
+  states: [ready, paused, game-over]
+ia:
+  top_level_objects: [game-board, next-piece, controls]
+  primary_navigation: [play, themes]
+  recovery_paths: [restart]
+design_philosophy:
+  soul_file: SOUL.md
+  status: approved
+  principles: [kinetic-clarity, readable-playfield, restrained-delight]
+  references: []
+  anti_references: [visual-noise, unreadable-neon]
+theme_exploration:
+  source: pinterest
+  research_method: authorized-browser-research
+  automated_scraping: forbidden
+  candidate_count: 15
+  canonical_screen: neutral-design-only
+  realistic_mock_data: false
+  gallery_route: /__ux/themes
+  status: approved
+theme_selection:
+  theme_id: neon-arcade
+  status: approved
+  approval_artifact: artifacts/02-ux/theme-selection.yml
+design:
+  product_character: focused playful precision
+  density: compact
+  component_system: modular
+  source_of_truth: SOUL.md
+motion:
+  system: spring
+  tokens: [instant, snappy, smooth, gentle]
+  reduced_motion: required
+react_mock:
+  route: /__ux/prototype
+  status: approved
+  fixture_states: [ready, paused, game-over]
+  starts_after_theme_approval: true
+usability_evidence:
+  status: validated
+  source: deterministic-pilot
+approval:
+  status: approved
+  approved_by: tetris-pilot

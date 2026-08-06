@@ -1,0 +1,15 @@
+version: 1
+primary_journey:
+  id: demo-health
+  goal: User sees the generated starter status
+  entry: landing
+  success: status-visible
+  states: [loading, error, success]
+motion:
+  system: spring
+  reduced_motion: required
+usability_evidence:
+  status: validated
+approval:
+  status: approved
+  approved_by: repository-fixture

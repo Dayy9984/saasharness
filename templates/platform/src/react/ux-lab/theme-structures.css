@@ -1,0 +1,92 @@
+/*
+ * All fifteen variants share one conventional B2C SaaS IA and layout.
+ * They may vary only practical UI treatment: control material, surface depth,
+ * density, radius, accent, focus, and motion intent. They are not art themes.
+ */
+
+.theme-frame {
+  overflow: hidden;
+  min-height: 610px;
+  border: 1px solid var(--theme-border);
+  border-radius: var(--theme-radius);
+  background: var(--theme-bg);
+  color: var(--theme-text);
+  box-shadow: var(--theme-shadow);
+}
+
+.theme-frame--compact { min-height: 390px; box-shadow: none; }
+.theme-frame__topbar { display: flex; align-items: center; justify-content: space-between; min-height: 58px; padding: 0 20px; border-bottom: 1px solid var(--theme-border); background: var(--theme-surface); backdrop-filter: var(--theme-panel-backdrop); }
+.theme-frame__brand { font-size: .72rem; font-weight: 800; letter-spacing: .12em; }
+.theme-frame__top-actions { display: flex; align-items: center; gap: 10px; }
+.theme-frame__search { min-width: 84px; padding: 7px 11px; border: 1px solid var(--theme-border); border-radius: calc(var(--theme-radius) * .65); color: var(--theme-muted); font-size: .7rem; }
+.theme-frame__avatar { width: 28px; height: 28px; border: 1px solid var(--theme-border); border-radius: 999px; background: var(--theme-accent-2); }
+.theme-frame__body { display: grid; grid-template-columns: 58px minmax(0, 1fr); min-height: 552px; }
+.theme-frame--compact .theme-frame__body { min-height: 330px; grid-template-columns: 42px minmax(0, 1fr); }
+.theme-frame__rail { display: flex; flex-direction: column; gap: 12px; align-items: center; padding-top: 22px; border-right: 1px solid var(--theme-border); background: color-mix(in srgb, var(--theme-surface) 86%, var(--theme-bg)); }
+.theme-frame__rail span { width: 18px; height: 18px; border: 1px solid var(--theme-border); border-radius: calc(var(--theme-radius) * .45); background: var(--theme-surface); }
+.theme-frame__rail .is-active { border-color: var(--theme-accent); background: var(--theme-accent); }
+.theme-frame__content { padding: clamp(22px, 4vw, 48px); }
+.theme-frame--compact .theme-frame__content { padding: 20px; }
+.theme-frame__pagehead { display: flex; gap: 24px; align-items: flex-start; justify-content: space-between; }
+.theme-frame__copy { max-width: 620px; }
+.theme-frame__copy h2 { max-width: 14ch; margin: 8px 0 10px; font-size: clamp(1.75rem, 4vw, 3.3rem); line-height: 1; letter-spacing: -.035em; }
+.theme-frame--compact .theme-frame__copy h2 { font-size: clamp(1.25rem, 3vw, 2.1rem); }
+.theme-frame__copy > p:not(.theme-frame__kicker) { max-width: 58ch; margin: 0; color: var(--theme-muted); line-height: 1.55; }
+.theme-frame__kicker { margin: 0; color: var(--theme-accent); font-size: .68rem; font-weight: 800; letter-spacing: .14em; }
+.theme-frame__actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+.theme-frame__actions span { display: inline-flex; min-height: 38px; align-items: center; padding: 0 14px; border: 1px solid var(--theme-border); border-radius: calc(var(--theme-radius) * .75); background: var(--theme-surface); color: var(--theme-text); font-size: .66rem; font-weight: 800; letter-spacing: .035em; }
+.theme-frame__actions .is-primary { border-color: var(--theme-button-border); background: var(--theme-button-bg); color: var(--theme-button-text); box-shadow: var(--theme-button-shadow); backdrop-filter: var(--theme-panel-backdrop); }
+.theme-frame__metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 26px; }
+.theme-frame__metrics article, .theme-frame__list, .theme-frame__summary { border: 1px solid var(--theme-border); border-radius: var(--theme-radius); background: var(--theme-surface); box-shadow: 0 4px 16px color-mix(in srgb, var(--theme-text) 5%, transparent); backdrop-filter: var(--theme-panel-backdrop); }
+.theme-frame__metrics article { display: grid; gap: 7px; padding: 16px; }
+.theme-frame__metrics small, .theme-frame__summary small { color: var(--theme-muted); font-size: .62rem; font-weight: 800; letter-spacing: .08em; }
+.theme-frame__metrics strong { font-size: 1.35rem; }
+.theme-frame__metrics span { color: var(--theme-accent); font-size: .72rem; }
+.theme-frame__workspace { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(190px, .65fr); gap: 12px; margin-top: 12px; }
+.theme-frame__list, .theme-frame__summary { padding: 16px; }
+.theme-frame__list header { display: flex; justify-content: space-between; gap: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--theme-border); }
+.theme-frame__list header span { color: var(--theme-accent); font-size: .72rem; }
+.theme-frame__row { display: grid; grid-template-columns: 24px 1fr 48px; gap: 10px; align-items: center; min-height: 46px; border-bottom: 1px solid color-mix(in srgb, var(--theme-border) 70%, transparent); }
+.theme-frame__row:last-child { border-bottom: 0; }
+.theme-frame__row i { width: 22px; height: 22px; border-radius: 999px; background: var(--theme-accent-2); }
+.theme-frame__row span { height: 8px; border-radius: 999px; background: color-mix(in srgb, var(--theme-muted) 22%, transparent); }
+.theme-frame__row b { height: 8px; border-radius: 999px; background: color-mix(in srgb, var(--theme-accent) 25%, transparent); }
+.theme-frame__summary { display: flex; flex-direction: column; align-items: flex-start; }
+.theme-frame__summary > strong { margin-top: 8px; font-size: 1.05rem; }
+.theme-frame__summary p { color: var(--theme-muted); font-size: .82rem; line-height: 1.5; }
+.theme-frame__summary > span { margin-top: auto; padding: 9px 12px; border-radius: calc(var(--theme-radius) * .7); background: var(--theme-accent-2); color: var(--theme-text); font-size: .66rem; font-weight: 800; }
+
+/* Only subtle, useful treatment differences are allowed below. */
+.theme-frame--apple-glass-controls .theme-frame__topbar,
+.theme-frame--apple-glass-controls .theme-frame__metrics article,
+.theme-frame--apple-glass-controls .theme-frame__list,
+.theme-frame--apple-glass-controls .theme-frame__summary { background: rgba(255,255,255,.68); }
+.theme-frame--apple-glass-controls { background-image: radial-gradient(circle at 82% 12%, rgba(10,132,255,.10), transparent 30%), radial-gradient(circle at 10% 78%, rgba(124,92,255,.08), transparent 32%); }
+.theme-frame--linear-compact .theme-frame__content { padding: clamp(18px, 3vw, 34px); }
+.theme-frame--linear-compact .theme-frame__metrics article,
+.theme-frame--linear-compact .theme-frame__list,
+.theme-frame--linear-compact .theme-frame__summary { padding: 13px; }
+.theme-frame--miro-soft-canvas .theme-frame__rail .is-active { box-shadow: 0 0 0 4px var(--theme-accent-2); }
+.theme-frame--stripe-trust .theme-frame__summary { border-top: 3px solid var(--theme-accent); }
+.theme-frame--notion-content .theme-frame__metrics article,
+.theme-frame--notion-content .theme-frame__list,
+.theme-frame--notion-content .theme-frame__summary { box-shadow: none; }
+.theme-frame--figma-precision .theme-frame__actions span,
+.theme-frame--figma-precision .theme-frame__search { min-height: 34px; border-radius: 7px; }
+.theme-frame--soft-consumer .theme-frame__actions span { min-height: 44px; padding-inline: 18px; }
+.theme-frame--warm-commerce .theme-frame__summary > span { background: var(--theme-accent); color: var(--theme-button-text); }
+.theme-frame--calm-data .theme-frame__metrics strong { font-variant-numeric: tabular-nums; }
+.theme-frame--high-contrast :is(.theme-frame__search, .theme-frame__actions span, .theme-frame__metrics article, .theme-frame__list, .theme-frame__summary) { border-width: 2px; }
+.theme-frame--quiet-premium .theme-frame__copy h2 { font-family: Georgia, 'Times New Roman', serif; font-weight: 500; }
+.theme-frame--spacious-onboarding .theme-frame__content { padding: clamp(30px, 6vw, 64px); }
+.theme-frame--dense-admin .theme-frame__content { padding: 18px; }
+.theme-frame--dense-admin .theme-frame__metrics { gap: 8px; margin-top: 18px; }
+.theme-frame--dense-admin .theme-frame__workspace { gap: 8px; margin-top: 8px; }
+.theme-frame--accessible-focus .theme-frame__actions .is-primary { outline: 3px solid var(--theme-accent-2); outline-offset: 2px; }
+
+@media (max-width: 760px) {
+  .theme-frame__pagehead { display: grid; }
+  .theme-frame__actions { justify-content: flex-start; }
+  .theme-frame__metrics, .theme-frame__workspace { grid-template-columns: 1fr; }
+  .theme-frame__summary > span { margin-top: 12px; }
+}

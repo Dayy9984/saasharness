@@ -1,0 +1,35 @@
+version: 2
+status: draft
+method: authorized-browser-research
+sources: [pinterest, public-product-pages, design-system-documentation]
+policy:
+  automated_scraping: forbidden
+  copy_original_assets: forbidden
+  store_urls_and_observations_only: true
+  preserve_visible_attribution: true
+canonical_screen:
+  purpose: compare practical component treatment while keeping a standard B2C SaaS IA, layout, content skeleton, and user flow
+  real_mock_data: false
+  same_ia_layout_and_flow: true
+search_clusters:
+  - clean B2C SaaS interface
+  - Apple-like glass controls used selectively
+  - Linear-like compact product UI
+  - Miro-like friendly grouping
+  - Stripe-like payment trust
+  - content-first readability
+  - accessible focus and touch targets
+references: []
+# Each reviewed reference should contain:
+# - url: public Pin, Board, search, product, or design-system URL
+# - source_or_creator: visible attribution when available
+# - observed: [hierarchy, controls, surfaces, density, radius, focus, accent, motion, trust]
+# - use: abstract principle only
+# - do_not_copy: original image, logo, illustration, brand asset, exact composition, distinctive identity
+candidate_requirements:
+  count: 15
+  allowed_variation_axes: [button-material, selected-glass-controls, surface-depth, density, radius, accent, focus, motion]
+  prohibited_by_default: [neon-theme, brutalist-theme, game-theme, novelty-theme, art-direction-theme]
+  same_screen_structure: true
+  same_user_flow: true
+  legibility_and_accessibility_required: true

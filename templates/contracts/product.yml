@@ -1,0 +1,46 @@
+version: 2
+name: __PRODUCT_NAME__
+region: kr
+targets: [web]
+
+product:
+  target_user: ""
+  problem: ""
+  jtbd: ""
+  first_value: ""
+  non_goals: []
+
+monetization: subscription-plus-credits
+pricing:
+  free_paid_boundary: ""
+  refund_policy: ""
+  cancellation_policy: ""
+
+capabilities:
+  background_jobs: true
+  file_uploads: false
+  email: true
+  realtime: false
+
+identity:
+  providers: [kakao]
+
+payment:
+  provider: unset
+
+data_policy:
+  pii_level: basic
+  retention_days: 365
+  deletion: full-delete
+
+platform:
+  preferred: cloudflare
+  database: auto
+  expected_scale: small
+  relational_complexity: low
+  strict_consistency: false
+  write_heavy: false
+
+approval:
+  status: draft
+  approved_by: product-owner

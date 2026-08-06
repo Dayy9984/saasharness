@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.wrangler/
+.dev.vars
+.env*
+!.env.example
+playwright-report/
+test-results/
+
+# Materialized upstream repositories are pinned build inputs, not product source.
+.saasharness/sources/
+.saasharness/upstream-sources.json
+
+# Local critic/runtime state.
+.impeccable/config.local.json
+.impeccable/hook.cache.json
+.impeccable/hook.pending.json
