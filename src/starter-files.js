@@ -18,7 +18,7 @@ export function starterFiles(plan, contractRaw) {
       preview: 'npm run build && vite preview',
       deploy: 'npm run build && wrangler deploy',
       check: 'tsc -b && vite build && wrangler deploy --dry-run',
-      test: 'vitest run',
+      test: 'vitest run --config vitest.config.ts',
     },
     dependencies: { hono: '4.11.1', react: '19.2.1', 'react-dom': '19.2.1' },
     devDependencies: {
@@ -39,6 +39,7 @@ export function starterFiles(plan, contractRaw) {
     '.gitignore': 'node_modules/\ndist/\n.wrangler/\n.dev.vars\n.env*\n!.env.example\n',
     'index.html': '<!doctype html>\n<html lang="en">\n  <head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>SaaS Harness</title></head>\n  <body><div id="root"></div><script type="module" src="/src/react/main.tsx"></script></body>\n</html>\n',
     'vite.config.ts': "import { defineConfig } from 'vite';\nimport react from '@vitejs/plugin-react';\nimport { cloudflare } from '@cloudflare/vite-plugin';\n\nexport default defineConfig({ plugins: [react(), cloudflare()] });\n",
+    'vitest.config.ts': "import { defineConfig } from 'vitest/config';\n\nexport default defineConfig({ test: { environment: 'node', include: ['tests/**/*.test.ts'] } });\n",
     'tsconfig.json': `${JSON.stringify({ files: [], references: [{ path: './tsconfig.app.json' }, { path: './tsconfig.worker.json' }] }, null, 2)}\n`,
     'tsconfig.app.json': `${JSON.stringify({ compilerOptions: { target: 'ES2022', useDefineForClassFields: true, lib: ['ES2022', 'DOM', 'DOM.Iterable'], allowJs: false, skipLibCheck: true, esModuleInterop: true, allowSyntheticDefaultImports: true, strict: true, forceConsistentCasingInFileNames: true, module: 'ESNext', moduleResolution: 'Bundler', resolveJsonModule: true, isolatedModules: true, noEmit: true, jsx: 'react-jsx' }, include: ['src/react', 'src/generated', 'src/modules'] }, null, 2)}\n`,
     'tsconfig.worker.json': `${JSON.stringify({ compilerOptions: { target: 'ES2022', lib: ['ES2022', 'WebWorker'], module: 'ESNext', moduleResolution: 'Bundler', strict: true, noEmit: true }, include: ['src/worker', 'src/generated', 'src/modules'] }, null, 2)}\n`,
