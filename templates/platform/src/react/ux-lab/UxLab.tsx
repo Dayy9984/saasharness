@@ -11,32 +11,32 @@ function WorkflowHome() {
     <main className="ux-shell">
       <header className="ux-heading">
         <p className="ux-eyebrow">Human-in-the-loop React UX Lab</p>
-        <h1>Design philosophy before components</h1>
-        <p>Discuss and approve the product soul, research visual themes, compare fifteen same-screen variants, approve one theme, then build modular pages with mock data.</p>
+        <h1>Clean B2C foundation before components</h1>
+        <p>Confirm a short product UI foundation, compare fifteen practical treatments of the same standard SaaS screen, approve one, then build every page and responsive state with realistic mock data.</p>
       </header>
       <ol className="ux-workflow-grid">
         <li>
           <span>1</span>
           <h2>SOUL.md</h2>
-          <p>Human discussion establishes product character, visual grammar, motion philosophy, references, anti-references, and component constitution.</p>
+          <p>A brief contract for clarity, hierarchy, density, control material, motion, accessibility, references, and anti-patterns. It is not a branding manifesto.</p>
           <code>saasharness run . --stage ux-philosophy --execute</code>
         </li>
         <li>
           <span>2</span>
-          <h2>Pinterest research + 15 themes</h2>
-          <p>Collect URLs and observations without scraping or copying source assets. Render one canonical screen in fifteen materially different systems.</p>
-          <a href="/__ux/themes">Open theme gallery</a>
+          <h2>Public research + 15 UI treatments</h2>
+          <p>Research clean product interfaces and compare the same IA with subtle button, surface, density, radius, accent, focus, and motion differences.</p>
+          <a href="/__ux/themes">Open UI treatment gallery</a>
         </li>
         <li>
           <span>3</span>
-          <h2>Theme approval</h2>
-          <p>Selected theme: <strong>{approvedThemeId ?? 'not source-approved'}</strong></p>
-          <p>{themes.length} candidates are loaded.</p>
+          <h2>Treatment approval</h2>
+          <p>Selected treatment: <strong>{approvedThemeId ?? 'not source-approved'}</strong></p>
+          <p>{themes.length} clean variants are loaded.</p>
         </li>
         <li>
           <span>4</span>
-          <h2>Modular React mock</h2>
-          <p>After approval, construct primitives, patterns, feature components, pages, and critical states using realistic mock data.</p>
+          <h2>Complete React UX mock</h2>
+          <p>After approval, construct reusable components and every required page, state, journey, and responsive behavior with realistic mock data before production implementation begins.</p>
           <a href="/__ux/prototype">Open product prototype</a>
         </li>
       </ol>
