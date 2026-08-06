@@ -1,37 +1,55 @@
-# Complete SaaS Harness Workflow
+# Complete Upstream-Composed SaaS Harness Workflow
 
-## 1. Start the contracts
+## 1. Create and approve the product contract
 
 ```bash
 saasharness init ./contracts --name my-product
 ```
 
-The product owner and coding agent use `b2c-product-discovery` to discuss the product. The agent updates `product.yml`; it does not ask the user to choose low-level infrastructure.
+The product owner and coding agent complete `product.yml`. Market, pricing, entitlement, privacy, and product intent remain human-owned. Low-level infrastructure is resolved after product approval.
 
-## 2. Bootstrap the React UX workspace
-
-After the product contract is approved, UX and the first feature may still be drafts:
+## 2. Bootstrap from pinned GitHub bases
 
 ```bash
-saasharness plan ./contracts --prototype
-saasharness assemble ./contracts --out ./my-product --prototype
+saasharness bootstrap ./contracts \
+  --out ./my-product \
+  --provider codex \
+  --profile all \
+  --prototype \
+  --execute
 ```
 
-The assembler creates:
+The executable bootstrap:
 
-- React + Cloudflare Workers web workspace;
-- selected module boundaries and `module-lock.json`;
-- product, UX, architecture, plan, implementation, and release artifacts;
-- workflow and critic policy;
-- B2C workflow skills under `.agents/skills`;
-- React UX Lab scaffold at `/__ux`;
-- CI, base migration, environment/release guidance.
+1. creates a temporary pinned checkout of `cloudflare/templates`;
+2. copies its official `vite-react-template` into the destination;
+3. overlays the B2C platform, contracts, modules, skills, tests, workflow state, and evidence rules;
+4. checks out the selected upstream profile into `.saasharness/sources/`;
+5. runs the official Spec Kit initializer with the included B2C preset;
+6. installs the pinned Impeccable project integration;
+7. records source commits and runs the upstream doctor.
 
-## 3. Run the stage workflow
+Use `core`, `lifecycle`, or `all` depending on whether living-change, long-context, product-agent, Meta-Harness, and Hermes sources are required.
+
+## 3. Configure the external coding-agent processes
 
 ```bash
-cd my-product
-saasharness workflow status .
+saasharness agent init . --provider external-agent-cli
+```
+
+Edit `.saasharness/agent.json`, or set:
+
+```bash
+export SAASHARNESS_BUILDER_COMMAND_JSON='["agent-cli","...","-"]'
+export SAASHARNESS_CRITIC_COMMAND_JSON='["agent-cli","...","-"]'
+```
+
+Commands are argv arrays, not shell strings. The stage prompt is passed through stdin. Builder and critics run in separate processes.
+
+## 4. Execute the current stage
+
+```bash
+saasharness run . --execute
 ```
 
 Stages:
@@ -45,98 +63,103 @@ discovery
 → release
 ```
 
-Every stage is draft → independent critics → evaluation → revision if needed → human approval.
+For each stage the runner:
 
-## 4. Run critics
+1. reads the current human-approved contracts and workflow state;
+2. generates a stage prompt naming the canonical local upstream checkouts;
+3. invokes the builder process;
+4. runs stage verification;
+5. creates the mandatory critic packet;
+6. invokes one isolated critic process per required channel;
+7. validates each JSON report against the critic schema;
+8. synthesizes pass, revise, or block;
+9. runs another builder round when revision is allowed;
+10. stops at PASS for human approval, or escalates after the bounded maximum.
 
-Create a packet:
-
-```bash
-saasharness workflow packet . discovery
-```
-
-The active AI agent reads the packet and runs each required channel independently. It writes one JSON report per channel. Example:
-
-```bash
-saasharness workflow record . discovery intent --report ./intent.json
-saasharness workflow record . discovery requirements --report ./requirements.json
-saasharness workflow evaluate . discovery
-```
-
-If the decision is `revise`, update the artifact and start the next round:
-
-```bash
-saasharness workflow revise . discovery
-```
-
-If the decision is `pass`, the human approves:
+## 5. Human approval
 
 ```bash
 saasharness workflow approve . discovery --by "product-owner"
 ```
 
-The same process applies to every stage.
+Approval never comes from the builder or critic process. The current stage advances only after the required critic decision is `pass` and the human approves it.
 
-## 5. Build UX with a human
+## 6. Stage ownership
 
-Open the generated app:
+### Discovery
 
-```bash
-npm install
-npm run dev
+Canonical base: GitHub Spec Kit.
+
+Outputs include product constitution, clarified requirements, product specification, policy decisions, assumptions, and unresolved questions. `contracts/product.yml` and Spec Kit artifacts must remain consistent.
+
+### UX / IA
+
+Canonical bases: Open Design, Pro UI Engineering, Impeccable, React UX Lab.
+
+The deliverable is a running React experience, not a static document. It must include realistic fixtures, recovery paths, paid limits, interruption, long content, responsiveness, accessibility, spring motion, and reduced-motion behavior.
+
+Required independent channels:
+
+```text
+experience
++ design
++ browser-evidence
 ```
 
-Visit `/__ux`. Use `b2c-ux-ia` to replace the scaffold with the real IA, journeys, screen states, visual system, copy, and spring motion.
+### Architecture
 
-Recommended design integration:
+Canonical bases: Cloudflare Templates, Spec Kit, AI SaaS Starter safety invariants, and Open SaaS capability coverage.
 
-```bash
-saasharness integrations install impeccable --provider codex --project . --execute
-```
+The stage covers frontend/backend/module boundaries, D1 or PostgreSQL+Hyperdrive, migrations, cache/freshness, identity/payment adapters, Admin/CS/privacy, queues/storage/email/realtime, latency, traces, cost, and recovery.
 
-Then use Impeccable's shape/critique/audit/harden tools as additional evidence. The harness still requires its own three UX critic channels and human approval.
+### Plan
 
-## 6. Approve architecture and implementation plan
+Canonical bases: Spec Kit and Superpowers.
 
-The architecture stage covers:
+Spec Kit tasks are canonical. Product-feature WIP remains one. Tasks include exact paths, dependencies, acceptance, RED evidence, migration, rollback, critic, and runtime verification.
 
-- frontend/backend/module boundaries;
-- DB model and migrations;
-- cache/freshness;
-- Cloudflare services and escape profile;
-- identity/payment adapters;
-- Admin/CS/privacy;
-- latency, errors, traces, metrics, cost.
+### Implementation
 
-The plan stage turns one feature into phases and ordered tasks. WIP stays at one feature.
+Canonical base: Superpowers, with attributed AI SaaS Starter money-path constraints and Impeccable UI verification.
 
-## 7. Implement with TDD
+Strict RED-GREEN-REFACTOR applies to domain/API/data/auth/billing/credits/privacy and observable UI behavior. Full journeys are scenario-first. Tests may not be weakened to obtain GREEN.
 
-Use `b2c-tdd`.
+### Release
 
-- Strict RED–GREEN–REFACTOR for domain/API/data/auth/billing/credits/privacy and observable UI behavior.
-- Scenario-first for full journeys.
-- Record RED/GREEN/runtime evidence.
-- Run focused checks selected by:
-
-```bash
-saasharness risk <changed-files...>
-```
-
-Before implementation approval, run spec-compliance, code-quality, and runtime-evidence critics.
-
-## 8. Release
-
-Use `b2c-release`.
+Canonical bases: OpenSpec, Cloudflare release tooling, and independent release critics.
 
 ```text
 Preview
 → Staging
 → migration/recovery rehearsal
 → critical journeys
-→ release critics
+→ release-risk + release-evidence critics
 → human production approval
 → Production
 ```
 
-A generated project remains blocked from production while provider/module warnings exist.
+## 7. Upstream maintenance
+
+```bash
+saasharness upstreams sync . --profile all --execute
+saasharness upstreams doctor . --profile all
+```
+
+All source workspaces are detached at exact commits from `upstreams.lock.json`. No floating default branch is accepted. `upstream-sources.json` records expected and actual commits.
+
+## 8. Manual critic controls
+
+The automated runner uses the same public workflow primitives:
+
+```bash
+saasharness workflow packet . ux-ia
+saasharness workflow record . ux-ia experience --report ./experience.json
+saasharness workflow record . ux-ia design --report ./design.json
+saasharness workflow record . ux-ia browser-evidence --report ./browser.json
+saasharness workflow evaluate . ux-ia
+saasharness workflow revise . ux-ia
+```
+
+## 9. Production evidence
+
+Generated code remains blocked from production until the selected product passes its real provider and operational gates. These include account lifecycles, payment/refund/subscription states, idempotency and replay, database race/recovery, operator journeys, deployed environment promotion, and post-release verification. The harness automates the workflow and evidence collection; it does not fabricate credentials or claim unexecuted sandbox evidence.
