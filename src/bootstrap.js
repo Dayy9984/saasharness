@@ -3,9 +3,9 @@ import { spawnSync } from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
 import { assembleProject } from './assembler.js';
+import { writeAgentConfig } from './agent-config.js';
 import { installPinnedIntegration } from './upstream-installers.js';
 import { doctorUpstreams, syncUpstreams, upstreamSourcePath } from './upstream-workspace.js';
-import { writeAgentConfig } from './orchestrator.js';
 
 export const REQUIRED_BOOTSTRAP_INTEGRATIONS = Object.freeze(['spec-kit', 'impeccable']);
 
