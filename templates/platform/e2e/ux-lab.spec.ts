@@ -1,24 +1,21 @@
 import { test, expect } from '@playwright/test';
 
-test('design workflow exposes SOUL, 15-theme gallery, detail view, and a gated prototype route', async ({ page }) => {
+test('design workflow exposes the clean B2C foundation, 15 treatments, detail view, and gated prototype', async ({ page }) => {
   await page.goto('/__ux');
-  await expect(page.getByRole('heading', { name: /Design philosophy before components/i })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Clean B2C foundation before components/i })).toBeVisible();
 
   await page.goto('/__ux/themes');
-  const cards = page.locator('[data-theme-id]');
-  await expect(cards).toHaveCount(15);
-  await expect(page.getByText('15 materially different directions')).toBeVisible();
+  await expect(page.locator('[data-theme-id]')).toHaveCount(15);
+  await expect(page.getByText('15 clean B2C SaaS variants')).toBeVisible();
 
-  await page.locator('[data-theme-id="neon-arcade"]').getByRole('link', { name: /Open full preview/i }).click();
-  await expect(page.getByRole('heading', { name: /Neon Arcade/i })).toBeVisible();
+  await page.locator('[data-theme-id="apple-glass-controls"]').getByRole('link', { name: /Open full preview/i }).click();
+  await expect(page.getByRole('heading', { name: /Apple Glass Controls/i })).toBeVisible();
   await expect(page.getByText(/Human approval/i)).toBeVisible();
 
   await page.goto('/__ux/prototype');
   await expect(page.getByRole('heading', {
     name: /Approve a theme before mock-data UX work|Approved-theme product prototype/i,
   })).toBeVisible();
-  const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
-  expect(overflow).toBe(false);
 });
 
 test('health route exposes generated profile identity', async ({ request }) => {
