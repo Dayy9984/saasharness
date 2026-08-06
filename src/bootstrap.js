@@ -2,7 +2,7 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { assembleProject } from './assembler.js';
-import { installIntegration } from './integrations.js';
+import { installPinnedIntegration } from './upstream-installers.js';
 import { doctorUpstreams, syncUpstreams, upstreamSourcePath } from './upstream-workspace.js';
 import { writeAgentConfig } from './orchestrator.js';
 
@@ -58,11 +58,11 @@ export async function bootstrapProject(contractDir, outDir, options = {}) {
 
     const integrations = [];
     for (const name of REQUIRED_BOOTSTRAP_INTEGRATIONS) {
-      integrations.push(installIntegration(name, options.provider ?? 'codex', assembled.outDir, true));
+      integrations.push(await installPinnedIntegration(name, assembled.outDir, options.provider ?? 'codex', true));
     }
     const manualIntegrations = [
-      installIntegration('superpowers', options.provider ?? 'codex', assembled.outDir, false),
-      installIntegration('open-design', options.provider ?? 'codex', assembled.outDir, false),
+      await installPinnedIntegration('superpowers', assembled.outDir, options.provider ?? 'codex', false),
+      await installPinnedIntegration('open-design', assembled.outDir, options.provider ?? 'codex', false),
     ];
     const doctor = await doctorUpstreams(assembled.outDir, {
       profile: options.upstreamProfile ?? 'lifecycle',
