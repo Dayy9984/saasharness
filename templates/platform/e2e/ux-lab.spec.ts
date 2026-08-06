@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test('design workflow exposes SOUL, 15-theme gallery, detail view, and prototype route', async ({ page }) => {
+test('design workflow exposes SOUL, 15-theme gallery, detail view, and a locked prototype before approval', async ({ page }) => {
   await page.goto('/__ux');
   await expect(page.getByRole('heading', { name: /Design philosophy before components/i })).toBeVisible();
 
@@ -14,7 +14,7 @@ test('design workflow exposes SOUL, 15-theme gallery, detail view, and prototype
   await expect(page.getByText(/Human approval/i)).toBeVisible();
 
   await page.goto('/__ux/prototype');
-  await expect(page.getByRole('heading', { name: /Approved-theme product prototype/i })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Approve a theme before mock-data UX work/i })).toBeVisible();
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
   expect(overflow).toBe(false);
 });
