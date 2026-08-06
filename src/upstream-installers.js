@@ -31,7 +31,15 @@ export function pinnedIntegrationPlan(name, projectDir = '.', provider = 'codex'
     return {
       name,
       source,
-      steps: [npmExecPackage(source, 'impeccable', ['install', `--providers=${provider}`, '--scope=project'])],
+      steps: [
+        ['npm', ['--prefix', source, 'install', '--omit=dev']],
+        ['node', [
+          path.join(source, 'cli', 'bin', 'cli.js'),
+          'install',
+          `--providers=${provider}`,
+          '--scope=project',
+        ]],
+      ],
     };
   }
   if (name === 'openspec') {
