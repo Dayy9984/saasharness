@@ -54,6 +54,10 @@ export interface Env {
   STRIPE_API_VERSION?: string;
   TOSS_CLIENT_KEY?: string;
   TOSS_SECRET_KEY?: string;
+  EMAIL_PROVIDER?: 'console' | 'resend';
+  RESEND_API_KEY?: string;
+  EMAIL_FROM?: string;
+  EMAIL_REPLY_TO?: string;
   ADMIN_BOOTSTRAP_USER_ID?: string;
   ADMIN_BREAK_GLASS_TOKEN?: string;
   TEST_MIGRATIONS?: unknown;
