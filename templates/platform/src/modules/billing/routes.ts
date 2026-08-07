@@ -76,7 +76,12 @@ billingRoutes.post('/api/billing/subscriptions/:id/cancel', async (context) => {
   if (originError) return originError;
   const user = await requireUser(context);
   if (!user) return context.json({ error: 'authentication required' }, 401);
-  const body = await context.req.json<{ atPeriodEnd?: boolean }>().catch(() => ({}));
+  let body: { atPeriodEnd?: boolean } = {};
+  try {
+    body = await context.req.json<{ atPeriodEnd?: boolean }>();
+  } catch {
+    // An empty request body uses the safe default: cancel at period end.
+  }
   return context.json(await cancelSubscription(
     context.env,
     user.id,
