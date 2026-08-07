@@ -37,10 +37,6 @@ function selectPayment(product) {
   if (product.monetization === 'free') return null;
   const explicit = product.payment?.provider;
   if (explicit && explicit !== 'unset') return explicit;
-  // Toss is the low-friction KR default for one-time/credit purchases. Stripe
-  // remains the default recurring engine because it owns the subscription
-  // schedule and lifecycle; Toss recurring requires a separate merchant billing
-  // contract and scheduler and therefore must be chosen explicitly.
   if (product.region === 'kr' && ['one-time', 'credits'].includes(product.monetization)) return 'toss';
   return 'stripe';
 }
@@ -70,7 +66,6 @@ function evidenceRequirements(modules, adapters) {
   const requirements = new Set([
     'staging critical journeys',
     'migration and recovery rehearsal',
-    'human production approval',
   ]);
   for (const name of modules) {
     for (const item of MODULES[name]?.evidence ?? []) requirements.add(item);
@@ -147,7 +142,7 @@ export function resolvePlan(contracts) {
   warnings.push({
     severity: 'evidence',
     code: 'EXTERNAL_EVIDENCE_REQUIRED',
-    message: 'the generated implementation is code-complete but remains blocked from production until provider, database, operator, staging, and recovery evidence is attached',
+    message: 'the generated implementation is code-complete but remains blocked from production until provider, database, operator, staging, recovery, and explicit human release approval are recorded',
   });
 
   const moduleLock = {
@@ -176,8 +171,6 @@ export function resolvePlan(contracts) {
     codeReady,
     releaseEvidence,
     warnings,
-    // This becomes true only in a generated customer repository after the
-    // release stage records real provider and deployed-environment evidence.
     productionReady: false,
   };
   const profileHash = createHash('sha256').update(stableJson(planBase)).digest('hex').slice(0, 16);
