@@ -46,7 +46,9 @@ function packageFile(plan) {
       'verify:low': 'npm run lint && npm run test:smoke',
       'verify:medium': 'npm run check && npm test',
       'verify:high': 'npm run verify:medium && npm run test:e2e',
-      'verify:critical': 'npm audit --omit=dev --audit-level=high && npm run verify:high && npm run test:money',
+      'verify:critical': 'npm audit --omit=dev --audit-level=high && npm run verify:high',
+      'release:assert:staging': 'node ./scripts/assert-release-evidence.mjs staging',
+      'release:assert:production': 'node ./scripts/assert-release-evidence.mjs production',
       ...databaseScripts(plan),
     },
     dependencies: {
@@ -168,15 +170,76 @@ function wranglerFile(plan) {
   return `${JSON.stringify(config, null, 2)}\n`;
 }
 
-function migrationStep(plan) {
+function migrationStep(plan, targetExpression = '${{ inputs.target }}') {
   if (databaseProvider(plan) === 'd1') {
-    return `      - name: Apply D1 migrations\n        run: npm run db:migrate:\${{ inputs.target }}\n        env:\n          CLOUDFLARE_API_TOKEN: \${{ secrets.CLOUDFLARE_API_TOKEN }}\n          CLOUDFLARE_ACCOUNT_ID: \${{ secrets.CLOUDFLARE_ACCOUNT_ID }}\n`;
+    return `      - name: Apply D1 migrations\n        run: npm run db:migrate:${targetExpression}\n        env:\n          CLOUDFLARE_API_TOKEN: \${{ secrets.CLOUDFLARE_API_TOKEN }}\n          CLOUDFLARE_ACCOUNT_ID: \${{ secrets.CLOUDFLARE_ACCOUNT_ID }}\n`;
   }
-  return `      - name: Apply PostgreSQL expand migrations\n        run: npm run db:migrate:\${{ inputs.target }}\n        env:\n          DATABASE_URL: \${{ secrets.DATABASE_URL }}\n`;
+  return `      - name: Apply PostgreSQL expand migrations\n        run: npm run db:migrate:${targetExpression}\n        env:\n          DATABASE_URL: \${{ secrets.DATABASE_URL }}\n`;
 }
 
 function deployWorkflow(plan) {
-  return `name: deploy\non:\n  workflow_dispatch:\n    inputs:\n      target:\n        description: staging or production\n        required: true\n        type: choice\n        options: [staging, production]\n        default: staging\nconcurrency:\n  group: deploy-\${{ inputs.target }}\n  cancel-in-progress: false\njobs:\n  verify-and-deploy:\n    runs-on: ubuntu-latest\n    environment: \${{ inputs.target }}\n    permissions:\n      contents: read\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 22\n          cache: npm\n      - run: npm ci\n      - name: Verify production-critical paths\n        run: npm run verify:critical\n${migrationStep(plan)}      - name: Deploy immutable build\n        run: npx wrangler deploy --env \${{ inputs.target }}\n        env:\n          CLOUDFLARE_API_TOKEN: \${{ secrets.CLOUDFLARE_API_TOKEN }}\n          CLOUDFLARE_ACCOUNT_ID: \${{ secrets.CLOUDFLARE_ACCOUNT_ID }}\n      - name: Post-deploy health check\n        run: node ./scripts/post-deploy-smoke.mjs \"\${{ vars.APP_ORIGIN }}\"\n`;
+  return `name: deploy
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: staging or production
+        required: true
+        type: choice
+        options: [staging, production]
+        default: staging
+concurrency:
+  group: deploy-\${{ github.event_name == 'pull_request' && format('preview-{0}', github.event.pull_request.number) || inputs.target }}
+  cancel-in-progress: false
+jobs:
+  preview:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    environment: preview
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: node ./scripts/assert-release-evidence.mjs staging
+      - run: npm run verify:high
+${migrationStep(plan, 'preview')}      - name: Deploy preview
+        run: npx wrangler deploy --env preview
+        env:
+          CLOUDFLARE_API_TOKEN: \${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: \${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Post-deploy preview health
+        run: node ./scripts/post-deploy-smoke.mjs "\${{ vars.APP_ORIGIN }}"
+  promote:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment: \${{ inputs.target }}
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Verify source-controlled release evidence
+        run: node ./scripts/assert-release-evidence.mjs "\${{ inputs.target }}"
+      - name: Verify production-critical paths
+        run: npm run verify:critical
+${migrationStep(plan)}      - name: Deploy immutable build
+        run: npx wrangler deploy --env \${{ inputs.target }}
+        env:
+          CLOUDFLARE_API_TOKEN: \${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: \${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Post-deploy health and database readiness
+        run: node ./scripts/post-deploy-smoke.mjs "\${{ vars.APP_ORIGIN }}"
+`;
 }
 
 function vitestConfig(plan) {
