@@ -1,4 +1,8 @@
-import type { OnboardingContext } from '@onboardjs/core';
+import type {
+  LoadedData,
+  OnboardingContext,
+  OnboardingStep,
+} from '@onboardjs/core';
 import {
   OnboardingErrorBoundary,
   OnboardingProvider,
@@ -16,24 +20,98 @@ interface ProductOnboardingContext extends OnboardingContext<{ id?: string }> {
 
 const flowId = 'product-first-value';
 const flowVersion = '1.0.0';
+const localKey = `saasharness:${runtimeConfig.profileHash}:${flowId}`;
+
+function loadLocal(): LoadedData<ProductOnboardingContext> | null {
+  try {
+    const raw = localStorage.getItem(localKey);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as {
+      timestamp?: number;
+      data?: LoadedData<ProductOnboardingContext>;
+    };
+    return parsed.data ?? null;
+  } catch {
+    localStorage.removeItem(localKey);
+    return null;
+  }
+}
+
+function persistLocal(
+  context: ProductOnboardingContext,
+  currentStepId: string | number | null,
+) {
+  const data: LoadedData<ProductOnboardingContext> = {
+    ...context,
+    flowData: context.flowData,
+    currentStepId,
+  };
+  localStorage.setItem(localKey, JSON.stringify({ timestamp: Date.now(), data }));
+}
+
+async function loadProgress(): Promise<LoadedData<ProductOnboardingContext> | null> {
+  try {
+    const response = await fetch(`/api/onboarding/${flowId}`, {
+      headers: { accept: 'application/json' },
+    });
+    if (response.status === 401) return loadLocal();
+    if (!response.ok) throw new Error(`onboarding load failed (${response.status})`);
+    const body = await response.json() as {
+      progress: null | {
+        currentStepId: string | null;
+        context: ProductOnboardingContext;
+        status: 'in-progress' | 'completed';
+      };
+    };
+    if (!body.progress) return loadLocal();
+    const loaded: LoadedData<ProductOnboardingContext> = {
+      ...body.progress.context,
+      currentStepId: body.progress.status === 'completed'
+        ? null
+        : body.progress.currentStepId,
+    };
+    localStorage.setItem(localKey, JSON.stringify({ timestamp: Date.now(), data: loaded }));
+    return loaded;
+  } catch (error) {
+    console.warn('Using local onboarding progress because server resume was unavailable', error);
+    return loadLocal();
+  }
+}
 
 async function persistProgress(
   context: ProductOnboardingContext,
-  currentStepId: string | null,
+  currentStepId: string | number | null,
   completed: boolean,
 ) {
-  const response = await fetch(`/api/onboarding/${flowId}`, {
-    method: 'PUT',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({
-      flowVersion,
-      currentStepId,
-      context,
-      completed,
-    }),
-  });
-  if (response.status === 401) return;
-  if (!response.ok) throw new Error(`onboarding persistence failed (${response.status})`);
+  persistLocal(context, currentStepId);
+  try {
+    const response = await fetch(`/api/onboarding/${flowId}`, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        flowVersion,
+        currentStepId: currentStepId === null ? null : String(currentStepId),
+        context,
+        completed,
+      }),
+    });
+    if (response.status === 401) return;
+    if (!response.ok) throw new Error(`onboarding persistence failed (${response.status})`);
+  } catch (error) {
+    console.warn('Onboarding progress remains available locally; server sync failed', error);
+  }
+}
+
+async function clearProgress() {
+  localStorage.removeItem(localKey);
+  try {
+    const response = await fetch(`/api/onboarding/${flowId}`, { method: 'DELETE' });
+    if (response.status !== 401 && !response.ok) {
+      throw new Error(`onboarding clear failed (${response.status})`);
+    }
+  } catch (error) {
+    console.warn('Local onboarding progress was cleared; server clear failed', error);
+  }
 }
 
 function WelcomeStep() {
@@ -93,7 +171,7 @@ function FirstValueStep() {
   );
 }
 
-const steps = [
+const steps: OnboardingStep<ProductOnboardingContext>[] = [
   { id: 'welcome', component: WelcomeStep, nextStep: 'goal' },
   { id: 'goal', component: GoalStep, previousStep: 'welcome', nextStep: 'first-value' },
   { id: 'first-value', component: FirstValueStep, previousStep: 'goal', nextStep: null },
@@ -131,11 +209,11 @@ function OnboardingControls() {
         <progress value={state.currentStepNumber} max={state.totalSteps} aria-label="Onboarding progress" />
       </div>
       <OnboardingErrorBoundary
-        fallback={({ error, resetErrorBoundary }) => (
+        fallback={({ error, resetError }) => (
           <section className="onboarding-error" role="alert">
             <h1>This step could not load</h1>
             <p>{error.message}</p>
-            <button type="button" onClick={resetErrorBoundary}>Try again</button>
+            <button type="button" onClick={resetError}>Try again</button>
           </section>
         )}
       >
@@ -143,7 +221,7 @@ function OnboardingControls() {
       </OnboardingErrorBoundary>
       <footer className="onboarding-actions">
         <button type="button" onClick={() => previous()} disabled={!state.canGoPrevious || loading.isAnyLoading}>Back</button>
-        {state.currentStep?.isSkippable && (
+        {state.isSkippable && (
           <button type="button" onClick={() => skip()} disabled={loading.isAnyLoading}>Skip</button>
         )}
         <button type="button" className="is-primary" onClick={() => next()} disabled={!state.canGoNext || loading.isAnyLoading}>
@@ -164,13 +242,10 @@ export function OnboardingPage() {
         steps={steps}
         initialStepId="welcome"
         initialContext={{ flowData: {} }}
-        localStoragePersistence={{ key: `saasharness:${runtimeConfig.profileHash}:${flowId}` }}
-        onStepChange={(newStep, _oldStep, context) => {
-          void persistProgress(context, newStep ? String(newStep.id) : null, false).catch(console.error);
-        }}
-        onFlowComplete={(context) => {
-          void persistProgress(context, null, true).catch(console.error);
-        }}
+        customOnDataLoad={loadProgress}
+        customOnDataPersist={(context, currentStepId) => persistProgress(context, currentStepId, false)}
+        customOnClearPersistedData={clearProgress}
+        onFlowComplete={(context) => persistProgress(context, null, true)}
       >
         <OnboardingControls />
       </OnboardingProvider>
