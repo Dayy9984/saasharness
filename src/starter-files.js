@@ -1,17 +1,37 @@
 import { workflowArtifactFiles } from './artifact-templates.js';
+import { MODULES } from './registry.js';
 
 function tsString(value) {
   return JSON.stringify(value, null, 2);
 }
 
+const PLATFORM_IMPLEMENTATIONS = new Set([
+  'identity',
+  'analytics',
+  'admin-support',
+  'privacy',
+  'audit',
+  'observability',
+  'release-support',
+  'order',
+  'billing',
+  'subscription',
+  'entitlement',
+  'credits',
+]);
+
 function moduleFile(name) {
+  const metadata = MODULES[name] ?? { version: 'unregistered', status: 'unregistered' };
   return `/**
- * ${name} module public boundary.
- *
- * v0.1 is a generated contract boundary, not a production provider implementation.
- * Product features may import this file, but must not access provider SDKs or protected tables directly.
+ * Generated boundary for an optional module that has no reusable runtime pack.
+ * Production promotion remains blocked until this file is replaced by a tested
+ * implementation and the module registry status becomes implemented.
  */
-export const moduleStatus = ${JSON.stringify({ name, status: 'contract-only' }, null, 2)} as const;
+export const moduleStatus = ${JSON.stringify({
+    name,
+    version: metadata.version,
+    status: metadata.status,
+  }, null, 2)} as const;
 `;
 }
 
@@ -19,7 +39,7 @@ export function starterFiles(plan, contractRaw) {
   const packageJson = {
     name: plan.product.name,
     private: true,
-    version: '0.0.0',
+    version: '1.0.0',
     type: 'module',
     scripts: {
       dev: 'vite',
@@ -38,22 +58,34 @@ export function starterFiles(plan, contractRaw) {
       '@vitejs/plugin-react': '5.1.1',
       typescript: '5.9.3',
       vite: '^7.0.0',
-      vitest: '4.0.14',
+      vitest: '^4.1.0',
       wrangler: '4.88.0',
     },
   };
 
   const files = {
     'package.json': `${JSON.stringify(packageJson, null, 2)}\n`,
-    '.gitignore': 'node_modules/\ndist/\n.wrangler/\n.dev.vars\n.env*\n!.env.example\n.impeccable/config.local.json\n.impeccable/hook.cache.json\n.impeccable/hook.pending.json\n',
-    'index.html': '<!doctype html>\n<html lang="en">\n  <head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>SaaS Harness</title></head>\n  <body><div id="root"></div><script type="module" src="/src/react/main.tsx"></script></body>\n</html>\n',
+    '.gitignore': [
+      'node_modules/',
+      'dist/',
+      '.wrangler/',
+      '.dev.vars',
+      '.env*',
+      '!.env.example',
+      'playwright-report/',
+      'test-results/',
+      '.impeccable/config.local.json',
+      '.impeccable/hook.cache.json',
+      '.impeccable/hook.pending.json',
+      '.saasharness/runs/',
+      '',
+    ].join('\n'),
+    'index.html': '<!doctype html>\n<html lang="en">\n  <head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="color-scheme" content="light dark" /><title>SaaS Harness</title></head>\n  <body><div id="root"></div><script type="module" src="/src/react/main.tsx"></script></body>\n</html>\n',
     'vite.config.ts': "import { defineConfig } from 'vite';\nimport react from '@vitejs/plugin-react';\nimport { cloudflare } from '@cloudflare/vite-plugin';\n\nexport default defineConfig({ plugins: [react(), cloudflare()] });\n",
-    'vitest.config.ts': "import { defineConfig } from 'vitest/config';\n\nexport default defineConfig({ test: { environment: 'node', include: ['tests/**/*.test.ts'] } });\n",
-    'tsconfig.json': `${JSON.stringify({ files: [], references: [{ path: './tsconfig.app.json' }, { path: './tsconfig.worker.json' }] }, null, 2)}\n`,
-    'tsconfig.app.json': `${JSON.stringify({ compilerOptions: { target: 'ES2022', useDefineForClassFields: true, lib: ['ES2022', 'DOM', 'DOM.Iterable'], allowJs: false, skipLibCheck: true, esModuleInterop: true, allowSyntheticDefaultImports: true, strict: true, forceConsistentCasingInFileNames: true, module: 'ESNext', moduleResolution: 'Bundler', resolveJsonModule: true, isolatedModules: true, noEmit: true, jsx: 'react-jsx' }, include: ['src/react', 'src/generated', 'src/modules'] }, null, 2)}\n`,
-    'tsconfig.worker.json': `${JSON.stringify({ compilerOptions: { target: 'ES2022', lib: ['ES2022', 'WebWorker'], module: 'ESNext', moduleResolution: 'Bundler', strict: true, noEmit: true }, include: ['src/worker', 'src/generated', 'src/modules'] }, null, 2)}\n`,
-    'wrangler.jsonc': `${JSON.stringify({ $schema: 'node_modules/wrangler/config-schema.json', name: plan.product.name, main: './src/worker/index.ts', compatibility_date: '2025-10-08', compatibility_flags: ['nodejs_compat'], observability: { enabled: true }, upload_source_maps: true, assets: { directory: './dist/client', not_found_handling: 'single-page-application' } }, null, 2)}\n`,
-    'src/react/main.tsx': "import { StrictMode } from 'react';\nimport { createRoot } from 'react-dom/client';\nimport { App } from './App';\nimport { UxLab } from './ux-lab/UxLab';\nimport './styles.css';\n\nconst component = window.location.pathname.startsWith('/__ux') ? <UxLab /> : <App />;\ncreateRoot(document.getElementById('root')!).render(<StrictMode>{component}</StrictMode>);\n",
+    'tsconfig.json': `${JSON.stringify({
+      files: [],
+      references: [{ path: './tsconfig.app.json' }, { path: './tsconfig.worker.json' }],
+    }, null, 2)}\n`,
     'src/react/App.tsx': `import { runtimeConfig } from '../generated/runtime-config';
 
 export function App() {
@@ -63,8 +95,20 @@ export function App() {
       <h1>${plan.product.name}</h1>
       <p>Primary journey: <strong>{runtimeConfig.journey}</strong></p>
       <p>Current feature: <strong>{runtimeConfig.feature.name}</strong></p>
-      <p><a href="/__ux">Open the React UX Lab scaffold</a></p>
-      {!runtimeConfig.productionReady && <aside role="alert">Provider adapters are not production-ready. Review .saasharness/plan.json.</aside>}
+      <nav className="fixture-nav" aria-label="Product workspaces">
+        <a href="/__ux">React UX approval workspace</a>
+        <a href="/__admin">Admin and support console</a>
+      </nav>
+      {!runtimeConfig.codeReady && (
+        <aside role="alert">
+          A selected optional module has no implementation pack. Review <code>.saasharness/plan.json</code>.
+        </aside>
+      )}
+      {runtimeConfig.codeReady && !runtimeConfig.productionReady && (
+        <aside role="status">
+          The reusable code path is assembled. Production remains gated on real provider, staging, migration, recovery, and human release evidence.
+        </aside>
+      )}
     </main>
   );
 }
@@ -74,40 +118,26 @@ export function App() {
   loading: { state: 'loading', title: 'Loading', message: 'The user must receive immediate feedback.' },
   empty: { state: 'empty', title: 'No data yet', message: 'Explain the first useful action.' },
   error: { state: 'error', title: 'Something went wrong', message: 'Provide recovery and preserve user work.' },
+  permission: { state: 'permission', title: 'Permission required', message: 'Explain why access is needed and how to recover.' },
   paidLimit: { state: 'paid-limit', title: 'Plan limit reached', message: 'Explain price, entitlement, and next action clearly.' },
+  delayed: { state: 'delayed', title: 'Still working', message: 'Preserve progress and make cancellation or return safe.' },
 } as const;
 `,
-    'src/react/ux-lab/UxLab.tsx': `import { useState } from 'react';
-import { fixtures } from './fixtures';
-
-type FixtureName = keyof typeof fixtures;
-
-export function UxLab() {
-  const [fixtureName, setFixtureName] = useState<FixtureName>('default');
-  const fixture = fixtures[fixtureName];
-  return (
-    <main className="shell">
-      <p className="eyebrow">Human-in-the-loop React UX Lab</p>
-      <h1>{fixture.title}</h1>
-      <p>{fixture.message}</p>
-      <nav aria-label="UX fixture states" className="fixture-nav">
-        {(Object.keys(fixtures) as FixtureName[]).map((name) => (
-          <button key={name} type="button" aria-pressed={fixtureName === name} onClick={() => setFixtureName(name)}>
-            {name}
-          </button>
-        ))}
-      </nav>
-      <section aria-live="polite" data-state={fixture.state}>
-        <strong>State:</strong> {fixture.state}
-      </section>
-      <p>This scaffold is not an approved UX. Use the b2c-ux-ia skill, product references, critic channels, and human approval to replace it.</p>
-    </main>
-  );
-}
-`,
-    'src/react/styles.css': ':root { font-family: ui-sans-serif, system-ui, sans-serif; color: #172b4d; background: #f7f8fa; }\nbody { margin: 0; min-width: 320px; }\n.shell { max-width: 52rem; margin: 0 auto; padding: clamp(2rem, 8vw, 7rem) 1.25rem; }\n.eyebrow { text-transform: uppercase; letter-spacing: .12em; font-size: .75rem; }\naside { margin-top: 2rem; padding: 1rem; border: 1px solid #ff5630; border-radius: .75rem; background: #ffebe6; }\n.fixture-nav { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1.5rem 0; }\n.fixture-nav button { min-height: 44px; padding: .65rem .9rem; }\n',
-    'src/worker/index.ts': "import { Hono } from 'hono';\nimport { runtimeConfig } from '../generated/runtime-config';\n\nconst app = new Hono();\napp.get('/api/health', (context) => context.json({ ok: true, profileHash: runtimeConfig.profileHash, productionReady: runtimeConfig.productionReady }));\nexport default app;\n",
-    'src/generated/runtime-config.ts': `export const runtimeConfig = ${tsString({ profileHash: plan.profileHash, productionReady: plan.productionReady, journey: plan.ux.journey, feature: plan.feature, region: plan.product.region, modules: plan.modules, cloudflare: plan.cloudflare })} as const;\n`,
+    'src/react/styles.css': ':root { font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #172b4d; background: #f7f8fa; }\nbody { margin: 0; min-width: 320px; }\na { color: inherit; }\n.shell { max-width: 68rem; margin: 0 auto; padding: clamp(2rem, 8vw, 7rem) 1.25rem; }\n.eyebrow { text-transform: uppercase; letter-spacing: .12em; font-size: .75rem; }\naside { margin-top: 2rem; padding: 1rem; border: 1px solid #d0d5dd; border-radius: .75rem; background: #fff; }\n.fixture-nav { display: flex; flex-wrap: wrap; gap: 1rem; margin: 1.5rem 0; }\n.fixture-nav button { min-height: 44px; padding: .65rem .9rem; }\ninput, button { font: inherit; }\n',
+    'src/generated/runtime-config.ts': `export const runtimeConfig = ${tsString({
+      profileHash: plan.profileHash,
+      codeReady: plan.codeReady,
+      productionReady: plan.productionReady,
+      releaseEvidence: plan.releaseEvidence,
+      journey: plan.ux.journey,
+      feature: plan.feature,
+      region: plan.product.region,
+      monetization: plan.product.monetization,
+      paymentProvider: plan.product.paymentProvider,
+      database: plan.product.database,
+      modules: plan.modules,
+      cloudflare: plan.cloudflare,
+    })} as const;\n`,
     '.saasharness/plan.json': `${JSON.stringify(plan, null, 2)}\n`,
     'module-lock.json': `${JSON.stringify(plan.moduleLock, null, 2)}\n`,
     'contracts/product.yml': contractRaw.product,
@@ -118,53 +148,75 @@ export function UxLab() {
 - Profile hash: \`${plan.profileHash}\`
 - Region: \`${plan.product.region}\`
 - Database: \`${plan.moduleLock.adapters.database.provider}\`
+- Payment: \`${plan.product.paymentProvider ?? 'none'}\`
 - Modules: ${plan.modules.map((module) => `\`${module}\``).join(', ')}
 - Cloudflare services: ${plan.cloudflare.map((service) => `\`${service}\``).join(', ')}
-- Production ready: **${plan.productionReady ? 'yes' : 'no'}**
+- Reusable code ready: **${plan.codeReady ? 'yes' : 'no'}**
+- Production evidence complete: **${plan.productionReady ? 'yes' : 'no'}**
 
 ## Boundaries
 
-Product features may import module \`public.ts\` files only. Provider SDKs and protected persistence are implementation details.
+Product features import module \`public.ts\` files only. Provider transports and protected persistence remain private to their owner module.
 
-## Warnings
+## Required release evidence
 
-${plan.warnings.length ? plan.warnings.map((warning) => `- **${warning.code}**: ${warning.message}`).join('\n') : '- None'}
+${plan.releaseEvidence.map((item) => `- ${item}`).join('\n')}
+
+## Findings
+
+${plan.warnings.length ? plan.warnings.map((warning) => `- **${warning.code}** (${warning.severity}): ${warning.message}`).join('\n') : '- None'}
 `,
     'AGENTS.md': `# Generated project rules
 
 1. Follow the stage order in \`.saasharness/workflow.json\`.
-2. Product documents, IA/UX, architecture, plan, implementation, and release all require the configured critic channels before approval.
-3. UX critics must inspect a running React mock or preview; code-only UX critique is invalid.
-4. Work on one feature slice at a time.
-5. Use RED → GREEN → REFACTOR for domain, API, data, auth, billing, permission, credits, privacy, and observable React behavior.
+2. Product documents, IA/UX, architecture, plan, implementation, and release require independent critic channels and explicit human approval.
+3. UX critics inspect a running React mock; source-only UX approval is invalid.
+4. Work on one releasable feature slice at a time.
+5. Use RED → GREEN → REFACTOR for domain, API, data, auth, billing, permissions, credits, privacy, and observable React behavior.
 6. Use scenario-first tests for complete user journeys.
-7. Do not import provider SDKs or protected persistence from feature code.
-8. Do not weaken tests or critic evidence to obtain GREEN/PASS.
-9. Run risk-routed checks instead of the full suite on every edit.
-10. Production release requires human approval and resolved provider/module blockers.
+7. Product features import module public APIs only. Never access provider SDKs or protected tables directly.
+8. Do not weaken tests, critic evidence, migrations, or release controls to obtain GREEN/PASS.
+9. Use risk-routed verification. Billing, auth, privacy, credits, and migrations always run critical checks.
+10. Reusable code readiness and production evidence are separate. Production requires provider sandbox evidence, staging, migration/recovery rehearsal, critic PASS, and human approval.
 `,
-    '.github/workflows/ci.yml': "name: ci\non:\n  pull_request:\n  push:\n    branches: [main]\njobs:\n  check:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 22\n      - run: npm install\n      - run: npm audit --omit=dev --audit-level=high\n      - run: npm run check\n      - run: npm test\n",
-    'tests/health.test.ts': "import { describe, expect, it } from 'vitest';\nimport worker from '../src/worker';\n\ndescribe('health route', () => {\n  it('returns the generated profile identity', async () => {\n    const response = await worker.request('http://example.test/api/health');\n    expect(response.status).toBe(200);\n    const body = await response.json();\n    expect(body.ok).toBe(true);\n  });\n});\n",
-    'THIRD_PARTY_NOTICES.md': `# Third-party design and workflow sources
+    '.github/workflows/ci.yml': `name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run verify:critical
+`,
+    'THIRD_PARTY_NOTICES.md': `# Third-party sources
 
-SaaS Harness includes original B2C workflow skills informed by:
+The generated project contains attributed ports and installed integrations from pinned commits listed in \`.saasharness/upstreams.lock.json\`.
 
-- GitHub Spec Kit (MIT): artifact sequence and cross-artifact analysis patterns.
-- obra/superpowers (MIT): brainstorming, bite-sized planning, TDD, and review discipline.
-- Open Design (Apache-2.0): design contract and skill/plugin packaging patterns.
-- Impeccable (Apache-2.0): independent design review plus deterministic/browser evidence pattern.
-- UI UX Pro Max: optional external design intelligence. Not vendored or enabled by default because its repository/CLI license statements should be reviewed before use.
+- GitHub Spec Kit (MIT): constitution/spec/plan/tasks lifecycle through the official CLI and B2C preset.
+- obra/superpowers (MIT): RED–GREEN–REFACTOR, worktree, task execution, debugging, review, and completion skills.
+- Open Design (Apache-2.0): running design artifact and MCP workflow.
+- Impeccable (Apache-2.0): design critique, audit, hardening, motion, and browser evidence.
+- nikandr-surkov/ai-saas-starter (MIT): credits ledger, idempotency collision, conditional spend, and refund invariants ported to D1/PostgreSQL.
+- wasp-lang/open-saas (MIT): Stripe checkout, portal, subscription lifecycle, webhook, and SaaS operational coverage ported to Cloudflare.
+- Cloudflare templates/workers-sdk (Apache-2.0): React/Vite/Hono/Workers seed, Hyperdrive, D1 migration, and Workers Vitest patterns.
 
-No full third-party skill bundle is copied into the generated project. Optional integrations must be installed separately.
+Preserve this file and the root repository's third-party notices when distributing generated code.
 `,
     ...workflowArtifactFiles(plan),
   };
 
-  for (const moduleName of plan.modules) files[`src/modules/${moduleName}/public.ts`] = moduleFile(moduleName);
-  if (plan.moduleLock.adapters.database.provider === 'd1') {
-    files['migrations/0001_base.sql'] = '-- Generated baseline only; extend through feature TDD.\nCREATE TABLE IF NOT EXISTS app_user (\n  id TEXT PRIMARY KEY,\n  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP\n);\nCREATE TABLE IF NOT EXISTS audit_event (\n  id TEXT PRIMARY KEY,\n  actor_id TEXT,\n  action TEXT NOT NULL,\n  payload_json TEXT NOT NULL,\n  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP\n);\n';
-  } else {
-    files['migrations/README.md'] = '# PostgreSQL + Hyperdrive\n\nConfigure the external PostgreSQL database and add expand/backfill/contract migrations before production.\n';
+  for (const moduleName of plan.modules) {
+    if (!PLATFORM_IMPLEMENTATIONS.has(moduleName)) {
+      files[`src/modules/${moduleName}/public.ts`] = moduleFile(moduleName);
+    }
   }
   return files;
 }
