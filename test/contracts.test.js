@@ -28,8 +28,21 @@ test('prototype planning allows draft UX and feature after product approval', as
   assert.ok(validation.warnings.some((warning) => /ux is still draft/i.test(warning)));
 });
 
-test('mobile target is rejected in web-first v0.2', async () => {
+test('mobile target is rejected by the web-only golden path', async () => {
   const dir = await tempDir();
-  await writeContracts(dir, { product: `version: 2\nname: demo\nregion: global\ntargets: [web, mobile]\nmonetization: free\napproval:\n  status: approved\n  approved_by: owner\n` });
-  await assert.rejects(() => buildPlan(dir), /unsupported targets in v0\.2: mobile/);
+  await writeContracts(dir, { product: `version: 3\nname: demo\nregion: global\ntargets: [web, mobile]\nmonetization: free\napproval:\n  status: approved\n  approved_by: owner\n` });
+  await assert.rejects(() => buildPlan(dir), /unsupported targets: mobile/);
+});
+
+test('identity providers are optional and resolved from region defaults', async () => {
+  const dir = await tempDir();
+  await writeContracts(dir, { product: `version: 3\nname: global-free\nregion: global\ntargets: [web]\nmonetization: free\ncapabilities:\n  background_jobs: false\n  file_uploads: false\n  email: false\n  realtime: false\nplatform:\n  database: auto\napproval:\n  status: approved\n  approved_by: owner\n` });
+  const { plan } = await buildPlan(dir);
+  assert.deepEqual(plan.moduleLock.adapters.identity.map((adapter) => adapter.provider), ['google']);
+});
+
+test('monetized contracts require executable pricing plans', async () => {
+  const dir = await tempDir();
+  await writeContracts(dir, { product: `version: 3\nname: paid\nregion: global\ntargets: [web]\nmonetization: subscription\ncapabilities:\n  background_jobs: false\n  file_uploads: false\n  email: false\n  realtime: false\napproval:\n  status: approved\n  approved_by: owner\n` });
+  await assert.rejects(() => buildPlan(dir), /pricing\.plans must define at least one paid plan/i);
 });
