@@ -8,6 +8,7 @@ export const MODULES = Object.freeze({
   audit: { version: '1.0.0', baseline: true, status: 'implemented', evidence: ['tamper-review'] },
   observability: { version: '1.0.0', baseline: true, status: 'implemented', evidence: ['dashboard-alerts'] },
   'release-support': { version: '1.0.0', baseline: true, status: 'implemented', evidence: ['staging-promotion-recovery'] },
+  onboarding: { version: '1.0.0', status: 'implemented', evidence: ['onboarding-resume-first-value'] },
   order: { version: '1.0.0', status: 'implemented', evidence: ['payment-sandbox'] },
   billing: { version: '1.0.0', status: 'implemented', evidence: ['payment-sandbox', 'refund-journey'] },
   subscription: { version: '1.0.0', status: 'implemented', evidence: ['subscription-lifecycle'] },
