@@ -1,2 +1,7 @@
 export { identityRoutes, requireUser } from './routes';
-export { getSessionUser, type SessionUser } from './service';
+export {
+  getSessionUser,
+  revokeAllSessions,
+  revokeSession,
+  type SessionUser,
+} from './service';
