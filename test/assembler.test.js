@@ -12,15 +12,19 @@ test('assembler creates deterministic web-only Cloudflare workspace', async () =
   await writeContracts(contracts);
   const result = await assembleProject(contracts, output);
   assert.equal(result.plan.product.targets.includes('web'), true);
+  assert.equal(result.plan.codeReady, true);
+  assert.equal(result.plan.productionReady, false);
   await access(path.join(output, 'src/react/App.tsx'));
   await access(path.join(output, 'src/react/ux-lab/UxLab.tsx'));
   await access(path.join(output, 'src/react/ux-lab/ThemeGallery.tsx'));
   await access(path.join(output, 'src/react/ux-lab/ProductPrototype.tsx'));
   await access(path.join(output, 'src/worker/index.ts'));
   await access(path.join(output, 'wrangler.jsonc'));
+  await access(path.join(output, '.saasharness/release-evidence.json'));
+  await access(path.join(output, 'src/generated/release-approval.ts'));
   await assert.rejects(() => access(path.join(output, 'mobile')));
   const lock = await readJson(path.join(output, 'module-lock.json'));
-  assert.equal(lock.starter, 'b2c-react-cloudflare@0.3.0');
+  assert.equal(lock.starter, 'b2c-react-cloudflare@1.0.0');
 });
 
 test('assembler installs staged design artifacts, critic workflow, and skills', async () => {
@@ -53,12 +57,14 @@ test('assembler ships the pinned upstream manifest and actual Spec Kit preset', 
   await access(path.join(output, '.saasharness/upstreams/spec-kit-b2c/preset.yml'));
 });
 
-test('generated UI visibly warns when provider adapters block production', async () => {
+test('generated UI separates reusable code readiness from production evidence', async () => {
   const root = await tempDir();
   const contracts = path.join(root, 'contracts');
   const output = path.join(root, 'generated');
   await writeContracts(contracts);
   await assembleProject(contracts, output);
   const app = await readFile(path.join(output, 'src/react/App.tsx'), 'utf8');
-  assert.match(app, /Provider adapters are not production-ready/);
+  assert.match(app, /reusable code path is assembled/i);
+  assert.match(app, /Production remains gated/i);
+  assert.match(app, /provider, staging, migration, recovery, and human release evidence/i);
 });
