@@ -106,32 +106,49 @@ function optionalBindings(plan, suffix) {
   if (plan.cloudflare.includes('queues')) {
     bindings.queues = {
       producers: [{ binding: 'JOBS_QUEUE', queue: `${plan.product.name}${suffix}-jobs` }],
-      consumers: [{ queue: `${plan.product.name}${suffix}-jobs`, max_batch_size: 10, max_batch_timeout: 5 }],
+      consumers: [{
+        queue: `${plan.product.name}${suffix}-jobs`,
+        max_batch_size: 10,
+        max_batch_timeout: 5,
+        max_retries: 5,
+        dead_letter_queue: `${plan.product.name}${suffix}-jobs-dlq`,
+      }],
     };
   }
   if (plan.cloudflare.includes('r2')) {
     bindings.r2_buckets = [{ binding: 'UPLOADS', bucket_name: `${plan.product.name}${suffix}-uploads` }];
   }
+  if (plan.cloudflare.includes('durable-objects')) {
+    bindings.durable_objects = {
+      bindings: [{ name: 'REALTIME_ROOMS', class_name: 'RealtimeRoom' }],
+    };
+  }
   return bindings;
 }
 
+function environmentVariables(plan, environment, origin) {
+  return {
+    APP_ENV: environment,
+    APP_ORIGIN: origin,
+    DATABASE_KIND: databaseProvider(plan),
+    PAYMENT_PROVIDER: paymentProvider(plan),
+    EMAIL_PROVIDER: plan.modules.includes('email')
+      ? environment === 'local' ? 'console' : 'resend'
+      : 'console',
+    STORAGE_MAX_UPLOAD_BYTES: '26214400',
+  };
+}
+
 function environmentConfig(plan, environment, suffix, origin, identifiers) {
-  const payment = paymentProvider(plan);
   return {
     name: environment === 'production' ? plan.product.name : `${plan.product.name}-${environment}`,
-    vars: {
-      APP_ENV: environment,
-      APP_ORIGIN: origin,
-      DATABASE_KIND: databaseProvider(plan),
-      PAYMENT_PROVIDER: payment,
-    },
+    vars: environmentVariables(plan, environment, origin),
     ...runtimeBindings(plan, suffix, identifiers),
     ...optionalBindings(plan, suffix),
   };
 }
 
 function wranglerFile(plan) {
-  const payment = paymentProvider(plan);
   const config = {
     $schema: 'node_modules/wrangler/config-schema.json',
     name: plan.product.name,
@@ -141,17 +158,15 @@ function wranglerFile(plan) {
     observability: { enabled: true, head_sampling_rate: 1 },
     upload_source_maps: true,
     assets: { directory: './dist/client', not_found_handling: 'single-page-application' },
-    vars: {
-      APP_ENV: 'local',
-      APP_ORIGIN: 'http://localhost:5173',
-      DATABASE_KIND: databaseProvider(plan),
-      PAYMENT_PROVIDER: payment,
-    },
+    vars: environmentVariables(plan, 'local', 'http://localhost:5173'),
     ...runtimeBindings(plan, '', {
       d1: '00000000-0000-0000-0000-000000000001',
       hyperdrive: '00000000000000000000000000000001',
     }),
     ...optionalBindings(plan, ''),
+    ...(plan.cloudflare.includes('durable-objects') ? {
+      migrations: [{ tag: 'v1', new_sqlite_classes: ['RealtimeRoom'] }],
+    } : {}),
     env: {
       preview: environmentConfig(plan, 'preview', '-preview', 'https://preview.example.invalid', {
         d1: '00000000-0000-0000-0000-000000000002',
@@ -250,12 +265,11 @@ function vitestConfig(plan) {
 }
 
 export function platformConfigFiles(plan) {
-  const payment = paymentProvider(plan);
   return {
     'package.json': packageFile(plan),
     'wrangler.jsonc': wranglerFile(plan),
     'vitest.config.ts': vitestConfig(plan),
     '.github/workflows/deploy.yml': deployWorkflow(plan),
-    '.dev.vars.example': `# Copy to .dev.vars. Never commit real values.\nAPP_ORIGIN=http://localhost:5173\nAPP_ENV=local\nDATABASE_KIND=${databaseProvider(plan)}\n\n# Identity\nGOOGLE_CLIENT_ID=\nGOOGLE_CLIENT_SECRET=\nKAKAO_CLIENT_ID=\nKAKAO_CLIENT_SECRET=\n\n# Payments\nPAYMENT_PROVIDER=${payment}\nSTRIPE_SECRET_KEY=\nSTRIPE_WEBHOOK_SECRET=\nSTRIPE_API_VERSION=\nTOSS_CLIENT_KEY=\nTOSS_SECRET_KEY=\n\n# Operations\nADMIN_BOOTSTRAP_USER_ID=\nADMIN_BREAK_GLASS_TOKEN=\n\n# PostgreSQL/Hyperdrive local development only\nDATABASE_URL=\n`,
+    '.dev.vars.example': `# Copy to .dev.vars. Never commit real values.\nAPP_ORIGIN=http://localhost:5173\nAPP_ENV=local\nDATABASE_KIND=${databaseProvider(plan)}\n\n# Identity\nGOOGLE_CLIENT_ID=\nGOOGLE_CLIENT_SECRET=\nKAKAO_CLIENT_ID=\nKAKAO_CLIENT_SECRET=\n\n# Payments\nPAYMENT_PROVIDER=${paymentProvider(plan)}\nSTRIPE_SECRET_KEY=\nSTRIPE_WEBHOOK_SECRET=\nSTRIPE_API_VERSION=\nTOSS_CLIENT_KEY=\nTOSS_SECRET_KEY=\n\n# Transactional email\nEMAIL_PROVIDER=console\nRESEND_API_KEY=\nEMAIL_FROM=Product <noreply@example.com>\nEMAIL_REPLY_TO=\n\n# Storage\nSTORAGE_MAX_UPLOAD_BYTES=26214400\n\n# Operations\nADMIN_BOOTSTRAP_USER_ID=\nADMIN_BREAK_GLASS_TOKEN=\n\n# PostgreSQL/Hyperdrive local development only\nDATABASE_URL=\n`,
   };
 }
