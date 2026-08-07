@@ -5,6 +5,17 @@ import { exists, ensureDir, readUtf8, writeUtf8 } from './fs-utils.js';
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
+const UX_UPSTREAMS = Object.freeze([
+  'no-slop-ui',
+  'uizze-anti-slop',
+  'uizze-ui-slop-gate',
+  'praeclarum-ui',
+  'frontend-no-slop',
+  'coss-ui',
+  'onboardjs',
+  'saas-ui-core',
+]);
+
 export const UPSTREAM_PROFILES = Object.freeze({
   core: [
     'cloudflare-react-template',
@@ -13,6 +24,7 @@ export const UPSTREAM_PROFILES = Object.freeze({
     'open-design',
     'impeccable',
     'pro-ui-engineering',
+    ...UX_UPSTREAMS,
     'ai-saas-starter',
     'open-saas',
   ],
@@ -23,6 +35,7 @@ export const UPSTREAM_PROFILES = Object.freeze({
     'open-design',
     'impeccable',
     'pro-ui-engineering',
+    ...UX_UPSTREAMS,
     'ai-saas-starter',
     'open-saas',
     'openspec',
@@ -38,6 +51,14 @@ const SENTINELS = Object.freeze({
   'open-design': 'package.json',
   impeccable: 'package.json',
   'pro-ui-engineering': 'SKILL.md',
+  'no-slop-ui': 'SKILL.md',
+  'uizze-anti-slop': 'skills/anti-ui-slop/SKILL.md',
+  'uizze-ui-slop-gate': 'action.yml',
+  'praeclarum-ui': 'UI.md',
+  'frontend-no-slop': '.agents/skills/frontend-no-slop/SKILL.md',
+  'coss-ui': 'apps/ui/skills/coss/SKILL.md',
+  onboardjs: 'packages/react/package.json',
+  'saas-ui-core': 'LICENSE',
   openspec: 'package.json',
   'gsd-core': 'package.json',
   'ai-saas-starter': 'src/lib/credits/index.ts',
@@ -81,14 +102,27 @@ export async function loadUpstreamLock(workspaceDir = '.') {
 }
 
 export function isSyncableUpstream(entry) {
+  const license = String(entry?.license ?? 'UNKNOWN');
+  const mode = String(entry?.mode ?? '');
+  const disallowedLicense = [
+    'UNKNOWN',
+    'REVIEW_REQUIRED',
+    'UNVERIFIED',
+    'COMMERCIAL',
+    'AGPL',
+  ].some((marker) => license.includes(marker));
+  const referenceOnly = [
+    'not-integrated',
+    'reference-only',
+    'external-reference-only',
+  ].some((prefix) => mode.startsWith(prefix));
   return Boolean(
     entry
       && typeof entry.repository === 'string'
       && typeof entry.ref === 'string'
       && entry.ref.length > 0
-      && entry.license !== 'UNKNOWN'
-      && entry.license !== 'REVIEW_REQUIRED'
-      && !String(entry.mode ?? '').startsWith('not-integrated'),
+      && !disallowedLicense
+      && !referenceOnly,
   );
 }
 
@@ -177,7 +211,7 @@ export async function syncUpstreams(workspaceDir = '.', options = {}) {
     });
   }
   const manifest = {
-    version: 1,
+    version: 2,
     generatedAt: new Date().toISOString(),
     lockPath,
     profile: options.profile ?? 'core',
