@@ -27,6 +27,11 @@ export async function sha256Hex(value: string): Promise<string> {
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
+export async function sha256Base64Url(value: string): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
+  return bytesToBase64Url(new Uint8Array(digest));
+}
+
 export async function hmacSha256Hex(secret: string, value: string): Promise<string> {
   const key = await crypto.subtle.importKey(
     'raw',
@@ -48,7 +53,7 @@ export function constantTimeEqual(left: string, right: string): boolean {
   return difference === 0;
 }
 
-interface Discovery {
+export interface Discovery {
   issuer: string;
   authorization_endpoint: string;
   token_endpoint: string;
@@ -58,6 +63,8 @@ interface Discovery {
 
 interface JwkWithKid extends JsonWebKey {
   kid?: string;
+  alg?: string;
+  use?: string;
 }
 
 const discoveryCache = new Map<string, Promise<Discovery>>();
@@ -67,7 +74,11 @@ export function getDiscovery(url: string): Promise<Discovery> {
   if (!discoveryCache.has(url)) {
     discoveryCache.set(url, fetch(url).then(async (response) => {
       if (!response.ok) throw new Error('OIDC discovery failed: ' + response.status);
-      return await response.json() as Discovery;
+      const discovery = await response.json() as Discovery;
+      if (!discovery.issuer || !discovery.authorization_endpoint || !discovery.token_endpoint || !discovery.jwks_uri) {
+        throw new Error('OIDC discovery document is incomplete');
+      }
+      return discovery;
     }));
   }
   return discoveryCache.get(url)!;
@@ -88,12 +99,13 @@ export async function verifyOidcIdToken(input: {
   discoveryUrl: string;
   clientId: string;
   nonce: string;
+  clockSkewSeconds?: number;
 }): Promise<Record<string, unknown>> {
   const parts = input.idToken.split('.');
   if (parts.length !== 3) throw new Error('Invalid ID token format');
   const header = JSON.parse(
     new TextDecoder().decode(base64UrlToBytes(parts[0])),
-  ) as { alg?: string; kid?: string };
+  ) as { alg?: string; kid?: string; typ?: string };
   const payload = JSON.parse(
     new TextDecoder().decode(base64UrlToBytes(parts[1])),
   ) as Record<string, unknown>;
@@ -101,7 +113,11 @@ export async function verifyOidcIdToken(input: {
 
   const discovery = await getDiscovery(input.discoveryUrl);
   const jwks = await getJwks(discovery.jwks_uri);
-  const jwk = jwks.keys.find((candidate) => candidate.kid === header.kid);
+  const jwk = jwks.keys.find((candidate) => (
+    candidate.kid === header.kid
+    && (!candidate.alg || candidate.alg === 'RS256')
+    && (!candidate.use || candidate.use === 'sig')
+  ));
   if (!jwk) throw new Error('ID token signing key not found');
   const key = await crypto.subtle.importKey(
     'jwk',
@@ -121,6 +137,9 @@ export async function verifyOidcIdToken(input: {
   const issuer = payload.iss;
   const audience = payload.aud;
   const expiry = payload.exp;
+  const issuedAt = payload.iat;
+  const now = Math.floor(Date.now() / 1000);
+  const skew = input.clockSkewSeconds ?? 60;
   if (
     issuer !== discovery.issuer
     && !(discovery.issuer === 'https://accounts.google.com' && issuer === 'accounts.google.com')
@@ -129,9 +148,8 @@ export async function verifyOidcIdToken(input: {
     ? audience.includes(input.clientId)
     : audience === input.clientId;
   if (!audienceMatches) throw new Error('Invalid ID token audience');
-  if (typeof expiry !== 'number' || expiry <= Math.floor(Date.now() / 1000)) {
-    throw new Error('Expired ID token');
-  }
+  if (typeof expiry !== 'number' || expiry < now - skew) throw new Error('Expired ID token');
+  if (typeof issuedAt === 'number' && issuedAt > now + skew) throw new Error('ID token issued in the future');
   if (payload.nonce !== input.nonce) throw new Error('Invalid ID token nonce');
   if (typeof payload.sub !== 'string' || payload.sub.length === 0) {
     throw new Error('ID token subject missing');
