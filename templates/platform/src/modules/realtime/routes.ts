@@ -8,10 +8,6 @@ function validRoomId(value: string) {
   return /^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$/.test(value);
 }
 
-async function forwardRoom(context: Parameters<typeof realtimeRoutes.get>[1] extends (...args: infer _Args) => unknown ? never : never) {
-  return context;
-}
-
 realtimeRoutes.get('/api/realtime/rooms/:roomId', async (context) => {
   context.header('cache-control', 'private, no-store');
   const user = await requireUser(context);
