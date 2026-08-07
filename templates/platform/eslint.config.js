@@ -12,6 +12,7 @@ export default tseslint.config(
       '.agents/**',
       'playwright-report/**',
       'test-results/**',
+      'worker-configuration.d.ts',
     ],
   },
   js.configs.recommended,
@@ -28,6 +29,19 @@ export default tseslint.config(
     rules: {
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      'no-console': 'off',
+    },
+  },
+  {
+    files: ['scripts/**/*.mjs'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        fetch: 'readonly',
+        setTimeout: 'readonly',
+      },
+    },
+    rules: {
       'no-console': 'off',
     },
   },
