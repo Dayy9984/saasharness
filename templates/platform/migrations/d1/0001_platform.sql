@@ -9,8 +9,7 @@ CREATE TABLE IF NOT EXISTS app_user (
   updated_at INTEGER NOT NULL,
   deleted_at INTEGER
 );
-CREATE UNIQUE INDEX IF NOT EXISTS idx_app_user_email
-  ON app_user(lower(email)) WHERE email IS NOT NULL AND deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_app_user_email ON app_user(lower(email));
 
 CREATE TABLE IF NOT EXISTS oauth_attempt (
   state TEXT PRIMARY KEY,
@@ -140,27 +139,21 @@ CREATE TABLE IF NOT EXISTS credit_ledger (
 );
 CREATE INDEX IF NOT EXISTS idx_credit_ledger_user ON credit_ledger(user_id, created_at DESC, id DESC);
 
-CREATE TRIGGER IF NOT EXISTS credit_ledger_require_account
-BEFORE INSERT ON credit_ledger
-WHEN NOT EXISTS (SELECT 1 FROM credit_account WHERE user_id = NEW.user_id)
-BEGIN
-  SELECT RAISE(ABORT, 'credit account not found');
-END;
-
-CREATE TRIGGER IF NOT EXISTS credit_ledger_prevent_overdraft
-BEFORE INSERT ON credit_ledger
-WHEN NEW.delta < 0
-  AND (SELECT balance + NEW.delta FROM credit_account WHERE user_id = NEW.user_id) < 0
-BEGIN
-  SELECT RAISE(ABORT, 'insufficient credits');
-END;
-
+-- This AFTER trigger only runs for a row that was actually inserted. Therefore
+-- INSERT OR IGNORE replay never changes the balance, while concurrent new spends
+-- serialize through the authoritative balance update.
 CREATE TRIGGER IF NOT EXISTS credit_ledger_apply_balance
 AFTER INSERT ON credit_ledger
 BEGIN
   UPDATE credit_account
   SET balance = balance + NEW.delta, updated_at = NEW.created_at
-  WHERE user_id = NEW.user_id;
+  WHERE user_id = NEW.user_id AND balance + NEW.delta >= 0;
+  SELECT CASE
+    WHEN changes() = 0 AND NOT EXISTS (
+      SELECT 1 FROM credit_account WHERE user_id = NEW.user_id
+    ) THEN RAISE(ABORT, 'credit account not found')
+    WHEN changes() = 0 THEN RAISE(ABORT, 'insufficient credits')
+  END;
 END;
 
 CREATE TRIGGER IF NOT EXISTS credit_ledger_no_update
