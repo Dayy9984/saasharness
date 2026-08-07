@@ -13,6 +13,14 @@ export function PrototypeShell({ themeId, children }: { themeId: string; childre
     '--theme-border': theme.border,
     '--theme-radius': theme.radius,
     '--theme-shadow': theme.shadow,
+    '--theme-button-bg': theme.buttonBg,
+    '--theme-button-text': theme.buttonText,
+    '--theme-button-border': theme.buttonBorder,
+    '--theme-button-shadow': theme.buttonShadow,
   } as CSSProperties;
-  return <section className="prototype-shell" style={style}>{children}</section>;
+  return (
+    <section className="prototype-shell" data-theme-id={theme.id} style={style}>
+      {children}
+    </section>
+  );
 }
