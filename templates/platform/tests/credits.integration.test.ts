@@ -11,30 +11,30 @@ import {
 } from '../src/modules/credits/public';
 
 const testEnv = env as Env;
-const userId = 'user_credits_test';
+let sequence = 0;
+let userId = '';
 
 beforeEach(async () => {
-  await env.DB!.prepare('DELETE FROM audit_event').run();
-  await env.DB!.prepare('DELETE FROM credit_ledger').run().catch(() => undefined);
-  await env.DB!.prepare('DELETE FROM credit_account').run();
-  await env.DB!.prepare('DELETE FROM app_user').run();
+  sequence += 1;
+  userId = `user_credits_${sequence}_${crypto.randomUUID()}`;
   const now = Date.now();
   await env.DB!.batch([
     env.DB!.prepare('INSERT INTO app_user(id, email, display_name, created_at, updated_at) VALUES (?, ?, ?, ?, ?)')
-      .bind(userId, 'credits@example.test', 'Credits Test', now, now),
+      .bind(userId, `credits-${sequence}@example.test`, 'Credits Test', now, now),
     env.DB!.prepare('INSERT INTO credit_account(user_id, balance, updated_at) VALUES (?, 0, ?)')
       .bind(userId, now),
   ]);
 });
 
 function mutation(idempotencyKey: string, amount: number, reason = 'test') {
+  const scopedKey = `${userId}:${idempotencyKey}`;
   return {
     userId,
     amount,
     reason,
     referenceType: 'test',
-    referenceId: idempotencyKey,
-    idempotencyKey,
+    referenceId: scopedKey,
+    idempotencyKey: scopedKey,
     actorId: userId,
   };
 }
@@ -64,13 +64,14 @@ describe('credits ledger invariants', () => {
 
   it('derives a refund from the immutable original spend', async () => {
     await grantCredits(testEnv, mutation('grant-refund', 10));
-    await spendCredits(testEnv, mutation('spend-refund', 4));
+    const spend = mutation('spend-refund', 4);
+    await spendCredits(testEnv, spend);
     const result = await refundCredits(testEnv, {
       userId,
-      originalSpendIdempotencyKey: 'spend-refund',
+      originalSpendIdempotencyKey: spend.idempotencyKey,
       referenceType: 'support-refund',
-      referenceId: 'refund-case-1',
-      idempotencyKey: 'refund-1',
+      referenceId: `${userId}:refund-case-1`,
+      idempotencyKey: `${userId}:refund-1`,
       actorId: 'support-user',
     });
     expect(result.balance).toBe(10);
@@ -78,10 +79,11 @@ describe('credits ledger invariants', () => {
   });
 
   it('rejects mutation of the append-only ledger', async () => {
-    await grantCredits(testEnv, mutation('grant-immutable', 3));
+    const grant = mutation('grant-immutable', 3);
+    await grantCredits(testEnv, grant);
     await expect(
       env.DB!.prepare('UPDATE credit_ledger SET delta = 99 WHERE idempotency_key = ?')
-        .bind('grant-immutable').run(),
+        .bind(grant.idempotencyKey).run(),
     ).rejects.toThrow(/append-only/i);
   });
 });
