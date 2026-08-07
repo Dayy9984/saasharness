@@ -64,7 +64,7 @@ test('generated UI separates reusable code readiness from production evidence', 
   await writeContracts(contracts);
   await assembleProject(contracts, output);
   const app = await readFile(path.join(output, 'src/react/App.tsx'), 'utf8');
-  assert.match(app, /reusable code path is assembled/i);
+  assert.match(app, /Reusable code is assembled/i);
   assert.match(app, /Production remains gated/i);
-  assert.match(app, /provider, staging, migration, recovery, and human release evidence/i);
+  assert.match(app, /provider, staging, migration, recovery, critic, and human release evidence/i);
 });
