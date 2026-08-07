@@ -12,6 +12,7 @@ import {
 import { resolvePlan } from './resolver.js';
 import { starterFiles } from './starter-files.js';
 import { platformConfigFiles } from './platform-config.js';
+import { initialReleaseEvidence, releaseApprovalSource } from './release-evidence.js';
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -26,8 +27,6 @@ export async function buildPlan(contractDir, options = {}) {
 }
 
 async function normalizeDatabaseArtifacts(outDir, plan) {
-  // The platform pack is the only schema authority. Remove every historical
-  // baseline file before selecting one database-specific migration directory.
   for (const legacy of ['0001_base.sql', '0001_platform.sql', 'README.md']) {
     await removePath(path.join(outDir, 'migrations', legacy));
   }
@@ -65,7 +64,14 @@ export async function assembleProject(contractDir, outDir, options = {}) {
   await writeFiles(outDir, starterFiles(plan, raw));
   await copyDirectory(path.join(packageRoot, 'templates', 'platform'), outDir);
   await normalizeDatabaseArtifacts(outDir, plan);
-  await writeFiles(outDir, platformConfigFiles(plan));
+  await writeFiles(outDir, {
+    ...platformConfigFiles(plan),
+    '.saasharness/release-evidence.json': `${JSON.stringify(initialReleaseEvidence(plan), null, 2)}\n`,
+    'src/generated/release-approval.ts': releaseApprovalSource({
+      productionReady: false,
+      profileHash: plan.profileHash,
+    }),
+  });
   await copyDirectory(path.join(packageRoot, 'skills'), path.join(outDir, '.agents', 'skills'));
   await copyDirectory(path.join(packageRoot, 'integrations'), path.join(outDir, '.saasharness', 'upstreams'));
   await copyFile(path.join(packageRoot, 'upstreams.lock.json'), path.join(outDir, '.saasharness', 'upstreams.lock.json'));
