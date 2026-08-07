@@ -33,7 +33,7 @@ function requireApproval(contract, label, errors) {
 
 function validateUxDesignLifecycle(ux, strict, errors, warnings) {
   if ((ux.version ?? 1) < 3) {
-    warnings.push('legacy UX contract detected; migrate to the SOUL → 15 themes → prototype lifecycle');
+    warnings.push('legacy UX contract detected; migrate to the SOUL → 15 treatments → prototype lifecycle');
     return;
   }
   const checks = [
@@ -50,7 +50,7 @@ function validateUxDesignLifecycle(ux, strict, errors, warnings) {
   const count = ux.theme_exploration?.candidate_count;
   if (count !== 15) {
     if (strict) errors.push('ux.theme_exploration.candidate_count must be exactly 15');
-    else warnings.push('theme exploration must produce exactly 15 same-screen variants before selection');
+    else warnings.push('treatment exploration must produce exactly 15 same-screen variants before selection');
   }
   if (ux.theme_exploration?.automated_scraping && ux.theme_exploration.automated_scraping !== 'forbidden') {
     errors.push('ux.theme_exploration.automated_scraping must be forbidden');
@@ -59,9 +59,6 @@ function validateUxDesignLifecycle(ux, strict, errors, warnings) {
 
 function validateProductPlatform(product, errors) {
   const providers = product.identity?.providers;
-  // Identity is a product-policy override, not a required technical question.
-  // When omitted, the resolver applies the certified regional default:
-  // Kakao for KR and Google for global.
   if (providers !== undefined) {
     if (!Array.isArray(providers) || providers.length === 0) {
       errors.push('product.identity.providers must be omitted or contain at least one supported provider');
@@ -75,7 +72,7 @@ function validateProductPlatform(product, errors) {
   if (!PAYMENT_PROVIDERS.has(payment)) errors.push('product.payment.provider must be unset, stripe, or toss');
   const database = product.platform?.database ?? 'auto';
   if (!DATABASES.has(database)) errors.push('product.platform.database must be auto, d1, or postgres-hyperdrive');
-  for (const capability of ['background_jobs', 'file_uploads', 'email', 'realtime']) {
+  for (const capability of ['onboarding', 'background_jobs', 'file_uploads', 'email', 'realtime']) {
     const value = product.capabilities?.[capability];
     if (value !== undefined && typeof value !== 'boolean') {
       errors.push(`product.capabilities.${capability} must be true or false`);
