@@ -2,7 +2,9 @@ import { applyD1Migrations, env } from 'cloudflare:test';
 import type { Env } from '../src/platform/env';
 
 declare module 'cloudflare:test' {
-  interface ProvidedEnv extends Env {}
+  interface ProvidedEnv extends Env {
+    readonly __saasharnessTestBrand?: never;
+  }
 }
 
 if (env.DATABASE_KIND === 'd1') {
