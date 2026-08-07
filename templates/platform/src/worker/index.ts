@@ -10,6 +10,7 @@ import { identityRoutes } from '../modules/identity/public';
 import { billingRoutes } from '../modules/billing/public';
 import { creditsRoutes } from '../modules/credits/public';
 import { entitlementRoutes } from '../modules/entitlement/public';
+import { onboardingRoutes } from '../modules/onboarding/public';
 import { adminRoutes } from '../modules/admin-support/public';
 import { privacyRoutes } from '../modules/privacy/public';
 import { storageRoutes } from '../modules/storage/public';
@@ -70,6 +71,7 @@ if (enabledModules.has('analytics')) app.route('/', analyticsRoutes);
 if (enabledModules.has('billing')) app.route('/', billingRoutes);
 if (enabledModules.has('credits')) app.route('/', creditsRoutes);
 if (enabledModules.has('entitlement')) app.route('/', entitlementRoutes);
+if (enabledModules.has('onboarding')) app.route('/', onboardingRoutes);
 if (enabledModules.has('storage')) app.route('/', storageRoutes);
 if (enabledModules.has('realtime')) app.route('/', realtimeRoutes);
 
