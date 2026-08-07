@@ -12,6 +12,12 @@ import { creditsRoutes } from '../modules/credits/public';
 import { entitlementRoutes } from '../modules/entitlement/public';
 import { adminRoutes } from '../modules/admin-support/public';
 import { privacyRoutes } from '../modules/privacy/public';
+import '../modules/email/public';
+import {
+  processQueueBatch,
+  type JobMessage,
+  type QueueBatchLike,
+} from '../modules/jobs/public';
 
 const app = new Hono<{ Bindings: Env }>();
 app.use('*', observeRequests);
@@ -62,4 +68,15 @@ if (runtimeConfig.modules.includes('entitlement')) app.route('/', entitlementRou
 
 app.notFound((context) => context.json({ error: 'not found' }, 404));
 
-export default app;
+const worker = {
+  fetch: app.fetch,
+  async queue(batch: QueueBatchLike<JobMessage>, env: Env) {
+    if (!runtimeConfig.modules.includes('jobs')) {
+      for (const message of batch.messages) message.ack();
+      return;
+    }
+    await processQueueBatch(env, batch);
+  },
+};
+
+export default worker;
