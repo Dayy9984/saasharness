@@ -59,11 +59,17 @@ function validateUxDesignLifecycle(ux, strict, errors, warnings) {
 
 function validateProductPlatform(product, errors) {
   const providers = product.identity?.providers;
-  if (!Array.isArray(providers) || providers.length === 0) {
-    errors.push('product.identity.providers must contain at least one supported provider');
-  } else {
-    const unsupported = providers.filter((provider) => !IDENTITY_PROVIDERS.has(provider));
-    if (unsupported.length) errors.push(`unsupported identity providers: ${unsupported.join(', ')}`);
+  // Identity is a product-policy override, not a required technical question.
+  // When omitted, the resolver applies the certified regional default:
+  // Kakao for KR and Google for global.
+  if (providers !== undefined) {
+    if (!Array.isArray(providers) || providers.length === 0) {
+      errors.push('product.identity.providers must be omitted or contain at least one supported provider');
+    } else {
+      const unsupported = providers.filter((provider) => !IDENTITY_PROVIDERS.has(provider));
+      if (unsupported.length) errors.push(`unsupported identity providers: ${unsupported.join(', ')}`);
+      if (new Set(providers).size !== providers.length) errors.push('product.identity.providers must not contain duplicates');
+    }
   }
   const payment = product.payment?.provider ?? 'unset';
   if (!PAYMENT_PROVIDERS.has(payment)) errors.push('product.payment.provider must be unset, stripe, or toss');
