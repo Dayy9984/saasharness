@@ -4,6 +4,7 @@ import { database } from '../platform/database';
 import { observeRequests } from '../platform/observability';
 import { securityHeaders } from '../platform/security';
 import { runtimeConfig } from '../generated/runtime-config';
+import { releaseApproval } from '../generated/release-approval';
 import { analyticsRoutes } from '../modules/analytics/public';
 import { identityRoutes } from '../modules/identity/public';
 import { billingRoutes } from '../modules/billing/public';
@@ -30,7 +31,12 @@ app.get('/api/health', (context) => context.json({
   ok: true,
   profileHash: runtimeConfig.profileHash,
   codeReady: runtimeConfig.codeReady,
-  productionReady: runtimeConfig.productionReady,
+  productionReady: runtimeConfig.codeReady && releaseApproval.productionReady,
+  releaseApproval: {
+    approvedBy: releaseApproval.approvedBy,
+    approvedAt: releaseApproval.approvedAt,
+    evidenceDigest: releaseApproval.evidenceDigest,
+  },
   environment: context.env.APP_ENV,
   database: context.env.DATABASE_KIND,
   modules: runtimeConfig.modules,
