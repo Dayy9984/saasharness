@@ -15,8 +15,8 @@ export const MODULES = Object.freeze({
   credits: { version: '1.0.0', status: 'implemented', evidence: ['race-replay-refund'] },
   jobs: { version: '1.0.0', status: 'implemented', evidence: ['queue-retry-and-idempotency'] },
   email: { version: '1.0.0', status: 'implemented', evidence: ['transactional-email-delivery'] },
-  storage: { version: '0.2.0', status: 'contract-only' },
-  realtime: { version: '0.2.0', status: 'contract-only' },
+  storage: { version: '1.0.0', status: 'implemented', evidence: ['r2-ownership-upload-delete-recovery'] },
+  realtime: { version: '1.0.0', status: 'implemented', evidence: ['durable-object-websocket-reconnect'] },
 });
 
 export const ADAPTERS = Object.freeze({
