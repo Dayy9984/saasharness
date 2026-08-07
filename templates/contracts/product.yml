@@ -27,6 +27,7 @@ pricing:
       active: true
 
 capabilities:
+  onboarding: true
   background_jobs: true
   file_uploads: false
   email: true
