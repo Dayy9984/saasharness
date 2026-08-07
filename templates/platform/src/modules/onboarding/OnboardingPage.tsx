@@ -5,6 +5,7 @@ import {
   useOnboarding,
 } from '@onboardjs/react';
 import { runtimeConfig } from '../../generated/runtime-config';
+import './onboarding.css';
 
 interface ProductOnboardingContext extends OnboardingContext<{ id?: string }> {
   flowData: OnboardingContext['flowData'] & {
