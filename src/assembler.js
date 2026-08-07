@@ -12,6 +12,7 @@ import {
 import { resolvePlan } from './resolver.js';
 import { starterFiles } from './starter-files.js';
 import { platformConfigFiles } from './platform-config.js';
+import { pricingMigrationFiles } from './pricing.js';
 import { initialReleaseEvidence, releaseApprovalSource } from './release-evidence.js';
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -66,6 +67,7 @@ export async function assembleProject(contractDir, outDir, options = {}) {
   await normalizeDatabaseArtifacts(outDir, plan);
   await writeFiles(outDir, {
     ...platformConfigFiles(plan),
+    ...pricingMigrationFiles(plan),
     '.saasharness/release-evidence.json': `${JSON.stringify(initialReleaseEvidence(plan), null, 2)}\n`,
     'src/generated/release-approval.ts': releaseApprovalSource({
       productionReady: false,
