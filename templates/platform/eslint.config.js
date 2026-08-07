@@ -33,6 +33,13 @@ export default tseslint.config(
     },
   },
   {
+    files: ['src/modules/storage/service.ts'],
+    rules: {
+      // The sanitizer deliberately removes C0 control characters from user-supplied filenames.
+      'no-control-regex': 'off',
+    },
+  },
+  {
     files: ['scripts/**/*.mjs'],
     languageOptions: {
       globals: {
