@@ -5,6 +5,7 @@ import path from 'node:path';
 import { assembleProject } from './assembler.js';
 import { writeAgentConfig } from './agent-config.js';
 import { installPinnedIntegration } from './upstream-installers.js';
+import { installPinnedUiSkills, UI_SKILL_INSTALLS } from './ui-upstreams.js';
 import { doctorUpstreams, syncUpstreams, upstreamSourcePath } from './upstream-workspace.js';
 
 export const REQUIRED_BOOTSTRAP_INTEGRATIONS = Object.freeze(['spec-kit', 'impeccable']);
@@ -45,6 +46,7 @@ export async function bootstrapPlan(contractDir, outDir, options = {}) {
       template: 'vite-react-template',
     },
     integrations: REQUIRED_BOOTSTRAP_INTEGRATIONS,
+    uiSkills: UI_SKILL_INSTALLS,
     projectVerification: options.verify === false ? [] : BOOTSTRAP_PROJECT_COMMANDS,
     humanGates: ['product documents', 'React UX/IA', 'architecture', 'plan', 'release'],
   };
@@ -75,6 +77,7 @@ export async function bootstrapProject(contractDir, outDir, options = {}) {
       execute: true,
       profile: options.upstreamProfile ?? 'lifecycle',
     });
+    const uiSkills = await installPinnedUiSkills(assembled.outDir);
     const agent = await writeAgentConfig(assembled.outDir, {
       provider: options.provider ?? 'codex',
       force: options.forceAgentConfig ?? false,
@@ -107,6 +110,7 @@ export async function bootstrapProject(contractDir, outDir, options = {}) {
       productionReady: assembled.plan.productionReady,
       warnings: assembled.plan.warnings,
       upstreams,
+      uiSkills,
       integrations,
       manualIntegrations,
       projectVerification,
