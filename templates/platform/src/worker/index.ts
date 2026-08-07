@@ -12,12 +12,16 @@ import { creditsRoutes } from '../modules/credits/public';
 import { entitlementRoutes } from '../modules/entitlement/public';
 import { adminRoutes } from '../modules/admin-support/public';
 import { privacyRoutes } from '../modules/privacy/public';
+import { storageRoutes } from '../modules/storage/public';
+import { realtimeRoutes } from '../modules/realtime/public';
 import '../modules/email/public';
 import {
   processQueueBatch,
   type JobMessage,
   type QueueBatchLike,
 } from '../modules/jobs/public';
+
+export { RealtimeRoom } from '../modules/realtime/public';
 
 const app = new Hono<{ Bindings: Env }>();
 app.use('*', observeRequests);
@@ -65,6 +69,8 @@ if (runtimeConfig.modules.includes('analytics')) app.route('/', analyticsRoutes)
 if (runtimeConfig.modules.includes('billing')) app.route('/', billingRoutes);
 if (runtimeConfig.modules.includes('credits')) app.route('/', creditsRoutes);
 if (runtimeConfig.modules.includes('entitlement')) app.route('/', entitlementRoutes);
+if (runtimeConfig.modules.includes('storage')) app.route('/', storageRoutes);
+if (runtimeConfig.modules.includes('realtime')) app.route('/', realtimeRoutes);
 
 app.notFound((context) => context.json({ error: 'not found' }, 404));
 
