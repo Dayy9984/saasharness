@@ -4,24 +4,48 @@ import { requireSameOrigin } from '../../platform/security';
 import { requireUser } from '../identity/public';
 import {
   beginCheckout,
+  billingSummary,
+  cancelSubscription,
+  createCustomerPortal,
   finishTossCheckout,
   handleStripeWebhook,
   handleTossWebhook,
+  listPlans,
 } from './service';
 
 export const billingRoutes = new Hono<{ Bindings: Env }>();
 
+billingRoutes.get('/api/billing/plans', async (context) => {
+  context.header('cache-control', 'public, max-age=60, stale-while-revalidate=300');
+  return context.json({ plans: await listPlans(context.env) });
+});
+
+billingRoutes.get('/api/billing/summary', async (context) => {
+  context.header('cache-control', 'private, no-store');
+  const user = await requireUser(context);
+  if (!user) return context.json({ error: 'authentication required' }, 401);
+  return context.json(await billingSummary(context.env, user.id));
+});
+
 billingRoutes.post('/api/billing/checkout', async (context) => {
+  context.header('cache-control', 'private, no-store');
   const originError = requireSameOrigin(context);
   if (originError) return originError;
   const user = await requireUser(context);
   if (!user) return context.json({ error: 'authentication required' }, 401);
-  const body = await context.req.json<{ planId?: string }>();
-  if (!body.planId) return context.json({ error: 'planId is required' }, 400);
-  return context.json(await beginCheckout(context.env, user.id, body.planId));
+  const body = await context.req.json<{ planId?: string; idempotencyKey?: string }>();
+  const idempotencyKey = context.req.header('idempotency-key') ?? body.idempotencyKey;
+  if (!body.planId || !idempotencyKey) {
+    return context.json({ error: 'planId and Idempotency-Key are required' }, 400);
+  }
+  return context.json(await beginCheckout(context.env, user.id, {
+    planId: body.planId,
+    idempotencyKey,
+  }));
 });
 
 billingRoutes.post('/api/billing/toss/confirm', async (context) => {
+  context.header('cache-control', 'private, no-store');
   const originError = requireSameOrigin(context);
   if (originError) return originError;
   const user = await requireUser(context);
@@ -35,6 +59,30 @@ billingRoutes.post('/api/billing/toss/confirm', async (context) => {
     orderId: body.orderId,
     amount: body.amount!,
   }));
+});
+
+billingRoutes.post('/api/billing/portal', async (context) => {
+  context.header('cache-control', 'private, no-store');
+  const originError = requireSameOrigin(context);
+  if (originError) return originError;
+  const user = await requireUser(context);
+  if (!user) return context.json({ error: 'authentication required' }, 401);
+  return context.json(await createCustomerPortal(context.env, user.id));
+});
+
+billingRoutes.post('/api/billing/subscriptions/:id/cancel', async (context) => {
+  context.header('cache-control', 'private, no-store');
+  const originError = requireSameOrigin(context);
+  if (originError) return originError;
+  const user = await requireUser(context);
+  if (!user) return context.json({ error: 'authentication required' }, 401);
+  const body = await context.req.json<{ atPeriodEnd?: boolean }>().catch(() => ({}));
+  return context.json(await cancelSubscription(
+    context.env,
+    user.id,
+    context.req.param('id'),
+    body.atPeriodEnd !== false,
+  ));
 });
 
 billingRoutes.post('/api/billing/webhooks/stripe', async (context) => {
