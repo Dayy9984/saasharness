@@ -33,6 +33,18 @@ function selectIdentity(product) {
   return product.region === 'kr' ? ['kakao'] : ['google'];
 }
 
+function selectPayment(product) {
+  if (product.monetization === 'free') return null;
+  const explicit = product.payment?.provider;
+  if (explicit && explicit !== 'unset') return explicit;
+  // Toss is the low-friction KR default for one-time/credit purchases. Stripe
+  // remains the default recurring engine because it owns the subscription
+  // schedule and lifecycle; Toss recurring requires a separate merchant billing
+  // contract and scheduler and therefore must be chosen explicitly.
+  if (product.region === 'kr' && ['one-time', 'credits'].includes(product.monetization)) return 'toss';
+  return 'stripe';
+}
+
 function addMonetizationModules(modules, monetization) {
   if (monetization === 'free') return;
   modules.add('billing');
@@ -40,6 +52,33 @@ function addMonetizationModules(modules, monetization) {
   if (monetization === 'one-time') modules.add('order');
   if (monetization === 'subscription' || monetization === 'subscription-plus-credits') modules.add('subscription');
   if (monetization === 'credits' || monetization === 'subscription-plus-credits') modules.add('credits');
+}
+
+function adapterRecord(type, provider) {
+  const key = `${type}:${provider}`;
+  const metadata = ADAPTERS[key];
+  return {
+    provider,
+    version: metadata?.version ?? 'unregistered',
+    status: metadata?.status ?? 'unregistered',
+    supports: metadata?.supports ?? null,
+    evidence: metadata?.evidence ?? [],
+  };
+}
+
+function evidenceRequirements(modules, adapters) {
+  const requirements = new Set([
+    'staging critical journeys',
+    'migration and recovery rehearsal',
+    'human production approval',
+  ]);
+  for (const name of modules) {
+    for (const item of MODULES[name]?.evidence ?? []) requirements.add(item);
+  }
+  for (const adapter of [...adapters.identity, adapters.database, adapters.payment].filter(Boolean)) {
+    for (const item of adapter.evidence ?? []) requirements.add(item);
+  }
+  return [...requirements];
 }
 
 export function resolvePlan(contracts) {
@@ -55,27 +94,12 @@ export function resolvePlan(contracts) {
 
   const identityProviders = selectIdentity(product);
   const database = selectDatabase(product);
-  const monetized = product.monetization !== 'free';
-  const paymentProvider = product.payment?.provider && product.payment.provider !== 'unset'
-    ? product.payment.provider
-    : `${product.region}-unresolved`;
+  const paymentProvider = selectPayment(product);
 
   const adapters = {
-    identity: identityProviders.map((provider) => ({
-      provider,
-      version: ADAPTERS[`identity:${provider}`]?.version ?? 'unregistered',
-      status: ADAPTERS[`identity:${provider}`]?.status ?? 'unregistered',
-    })),
-    database: {
-      provider: database,
-      version: ADAPTERS[`database:${database}`]?.version ?? 'unregistered',
-      status: ADAPTERS[`database:${database}`]?.status ?? 'unregistered',
-    },
-    payment: monetized ? {
-      provider: paymentProvider,
-      version: ADAPTERS[`payment:${paymentProvider}`]?.version ?? 'unregistered',
-      status: ADAPTERS[`payment:${paymentProvider}`]?.status ?? 'unregistered',
-    } : null,
+    identity: identityProviders.map((provider) => adapterRecord('identity', provider)),
+    database: adapterRecord('database', database),
+    payment: paymentProvider ? adapterRecord('payment', paymentProvider) : null,
   };
 
   const cloudflare = ['workers', 'assets'];
@@ -84,21 +108,47 @@ export function resolvePlan(contracts) {
   if (modules.has('storage')) cloudflare.push('r2');
   if (modules.has('realtime')) cloudflare.push('durable-objects');
 
-  const warnings = [
-    { severity: 'blocker', code: 'MODULE_PACK_NOT_HARDENED', message: 'v0.1 module boundaries are starter contracts and must be hardened before production' },
-  ];
-  if (adapters.identity.some((adapter) => adapter.status !== 'production')) {
-    warnings.push({ severity: 'blocker', code: 'IDENTITY_CONTRACT_ONLY', message: 'identity adapters are contract stubs in v0.1 and require real provider integration' });
+  const blockers = [];
+  for (const name of modules) {
+    const metadata = MODULES[name];
+    if (!metadata || metadata.status !== 'implemented') {
+      blockers.push({
+        severity: 'blocker',
+        code: `MODULE_${name.toUpperCase().replaceAll('-', '_')}_NOT_IMPLEMENTED`,
+        message: `${name} is selected but its reusable production module is not implemented`,
+      });
+    }
   }
-  if (adapters.database.status !== 'production') {
-    warnings.push({ severity: 'blocker', code: 'DATABASE_PROFILE_NOT_HARDENED', message: 'the selected database profile is a starter boundary and requires integration, migration, and recovery validation' });
+  for (const adapter of [...adapters.identity, adapters.database, adapters.payment].filter(Boolean)) {
+    if (adapter.status !== 'implemented') {
+      blockers.push({
+        severity: 'blocker',
+        code: `ADAPTER_${String(adapter.provider).toUpperCase().replaceAll('-', '_')}_NOT_IMPLEMENTED`,
+        message: `${adapter.provider} is selected but has no implemented adapter`,
+      });
+    }
   }
-  if (monetized && adapters.payment.status !== 'production') {
-    warnings.push({ severity: 'blocker', code: 'PAYMENT_ADAPTER_UNRESOLVED', message: 'select and validate a live market payment adapter before production' });
+  if (adapters.payment?.supports && !adapters.payment.supports.includes(product.monetization)) {
+    blockers.push({
+      severity: 'blocker',
+      code: 'PAYMENT_CAPABILITY_MISMATCH',
+      message: `${adapters.payment.provider} does not support monetization mode ${product.monetization}; select a compatible adapter`,
+    });
   }
+
+  const warnings = [...blockers];
   if (ux.usability_evidence?.status !== 'validated') {
-    warnings.push({ severity: 'warning', code: 'USABILITY_NOT_VALIDATED', message: 'product-owner approval does not replace target-user usability evidence' });
+    warnings.push({
+      severity: 'warning',
+      code: 'USABILITY_NOT_VALIDATED',
+      message: 'product-owner approval does not replace target-user usability evidence',
+    });
   }
+  warnings.push({
+    severity: 'evidence',
+    code: 'EXTERNAL_EVIDENCE_REQUIRED',
+    message: 'the generated implementation is code-complete but remains blocked from production until provider, database, operator, staging, and recovery evidence is attached',
+  });
 
   const moduleLock = {
     starter: STARTER_VERSION,
@@ -106,16 +156,29 @@ export function resolvePlan(contracts) {
     adapters,
   };
 
+  const codeReady = blockers.length === 0;
+  const releaseEvidence = evidenceRequirements([...modules], adapters);
   const planBase = {
-    schemaVersion: 1,
-    product: { name: product.name, region: product.region, targets: product.targets, monetization: product.monetization },
+    schemaVersion: 2,
+    product: {
+      name: product.name,
+      region: product.region,
+      targets: product.targets,
+      monetization: product.monetization,
+      paymentProvider,
+      database,
+    },
     ux: { journey: ux.primary_journey.id, approval: ux.approval.status },
     feature: { id: feature.id, name: feature.name, touches: feature.touches },
     modules: [...modules].sort(),
     cloudflare,
     moduleLock,
+    codeReady,
+    releaseEvidence,
     warnings,
-    productionReady: !warnings.some((warning) => warning.severity === 'blocker'),
+    // This becomes true only in a generated customer repository after the
+    // release stage records real provider and deployed-environment evidence.
+    productionReady: false,
   };
   const profileHash = createHash('sha256').update(stableJson(planBase)).digest('hex').slice(0, 16);
   return { ...planBase, profileHash };
