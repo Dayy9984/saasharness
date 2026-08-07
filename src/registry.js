@@ -13,9 +13,9 @@ export const MODULES = Object.freeze({
   subscription: { version: '1.0.0', status: 'implemented', evidence: ['subscription-lifecycle'] },
   entitlement: { version: '1.0.0', status: 'implemented', evidence: ['provider-replay'] },
   credits: { version: '1.0.0', status: 'implemented', evidence: ['race-replay-refund'] },
-  jobs: { version: '0.2.0', status: 'contract-only' },
+  jobs: { version: '1.0.0', status: 'implemented', evidence: ['queue-retry-and-idempotency'] },
+  email: { version: '1.0.0', status: 'implemented', evidence: ['transactional-email-delivery'] },
   storage: { version: '0.2.0', status: 'contract-only' },
-  email: { version: '0.2.0', status: 'contract-only' },
   realtime: { version: '0.2.0', status: 'contract-only' },
 });
 
