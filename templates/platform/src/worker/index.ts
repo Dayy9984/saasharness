@@ -23,6 +23,7 @@ import {
 
 export { RealtimeRoom } from '../modules/realtime/public';
 
+const enabledModules = new Set<string>(runtimeConfig.modules);
 const app = new Hono<{ Bindings: Env }>();
 app.use('*', observeRequests);
 app.use('*', securityHeaders);
@@ -65,19 +66,19 @@ app.get('/api/ready', async (context) => {
 app.route('/', identityRoutes);
 app.route('/', adminRoutes);
 app.route('/', privacyRoutes);
-if (runtimeConfig.modules.includes('analytics')) app.route('/', analyticsRoutes);
-if (runtimeConfig.modules.includes('billing')) app.route('/', billingRoutes);
-if (runtimeConfig.modules.includes('credits')) app.route('/', creditsRoutes);
-if (runtimeConfig.modules.includes('entitlement')) app.route('/', entitlementRoutes);
-if (runtimeConfig.modules.includes('storage')) app.route('/', storageRoutes);
-if (runtimeConfig.modules.includes('realtime')) app.route('/', realtimeRoutes);
+if (enabledModules.has('analytics')) app.route('/', analyticsRoutes);
+if (enabledModules.has('billing')) app.route('/', billingRoutes);
+if (enabledModules.has('credits')) app.route('/', creditsRoutes);
+if (enabledModules.has('entitlement')) app.route('/', entitlementRoutes);
+if (enabledModules.has('storage')) app.route('/', storageRoutes);
+if (enabledModules.has('realtime')) app.route('/', realtimeRoutes);
 
 app.notFound((context) => context.json({ error: 'not found' }, 404));
 
 const worker = {
   fetch: app.fetch,
   async queue(batch: QueueBatchLike<JobMessage>, env: Env) {
-    if (!runtimeConfig.modules.includes('jobs')) {
+    if (!enabledModules.has('jobs')) {
       for (const message of batch.messages) message.ack();
       return;
     }
