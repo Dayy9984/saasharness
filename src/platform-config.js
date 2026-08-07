@@ -25,6 +25,12 @@ function databaseScripts(plan) {
 }
 
 function packageFile(plan) {
+  const onboardingDependencies = plan.modules.includes('onboarding')
+    ? {
+        '@onboardjs/core': '1.0.0-rc.4',
+        '@onboardjs/react': '1.0.0-rc.5',
+      }
+    : {};
   return `${JSON.stringify({
     name: plan.product.name,
     private: true,
@@ -52,6 +58,7 @@ function packageFile(plan) {
       ...databaseScripts(plan),
     },
     dependencies: {
+      ...onboardingDependencies,
       hono: '4.13.0',
       pg: '^8.16.3',
       react: '19.2.1',
