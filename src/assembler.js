@@ -26,21 +26,22 @@ export async function buildPlan(contractDir, options = {}) {
 }
 
 async function normalizeDatabaseArtifacts(outDir, plan) {
-  // starterFiles historically emitted a second baseline migration. The platform
-  // pack is now the only schema authority, so generated projects can never apply
-  // two competing definitions of app_user/audit_event.
-  await removePath(path.join(outDir, 'migrations', '0001_base.sql'));
-  await removePath(path.join(outDir, 'migrations', 'README.md'));
+  // The platform pack is the only schema authority. Remove every historical
+  // baseline file before selecting one database-specific migration directory.
+  for (const legacy of ['0001_base.sql', '0001_platform.sql', 'README.md']) {
+    await removePath(path.join(outDir, 'migrations', legacy));
+  }
 
   const database = plan.moduleLock.adapters.database.provider;
   if (database === 'd1') {
     await removePath(path.join(outDir, 'migrations', 'postgres'));
+    if (!await exists(path.join(outDir, 'migrations', 'd1', '0001_platform.sql'))) {
+      throw new Error('d1 profile requires migrations/d1/0001_platform.sql');
+    }
   } else if (database === 'postgres-hyperdrive') {
     await removePath(path.join(outDir, 'migrations', 'd1'));
-    // Keep a compatibility copy for tools that expect migrations/ at the root.
-    const source = path.join(outDir, 'migrations', 'postgres');
-    if (!await exists(source)) {
-      throw new Error('postgres-hyperdrive profile requires migrations/postgres');
+    if (!await exists(path.join(outDir, 'migrations', 'postgres', '0001_platform.sql'))) {
+      throw new Error('postgres-hyperdrive profile requires migrations/postgres/0001_platform.sql');
     }
   }
 }
