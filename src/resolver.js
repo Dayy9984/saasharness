@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { ADAPTERS, MODULES, STARTER_VERSION } from './registry.js';
+import { normalizePricingPlans } from './pricing.js';
 
 function stable(value) {
   if (Array.isArray(value)) return value.map(stable);
@@ -51,8 +52,7 @@ function addMonetizationModules(modules, monetization) {
 }
 
 function adapterRecord(type, provider) {
-  const key = `${type}:${provider}`;
-  const metadata = ADAPTERS[key];
+  const metadata = ADAPTERS[`${type}:${provider}`];
   return {
     provider,
     version: metadata?.version ?? 'unregistered',
@@ -63,10 +63,7 @@ function adapterRecord(type, provider) {
 }
 
 function evidenceRequirements(modules, adapters) {
-  const requirements = new Set([
-    'staging critical journeys',
-    'migration and recovery rehearsal',
-  ]);
+  const requirements = new Set(['staging critical journeys', 'migration and recovery rehearsal']);
   for (const name of modules) {
     for (const item of MODULES[name]?.evidence ?? []) requirements.add(item);
   }
@@ -87,18 +84,16 @@ export function resolvePlan(contracts) {
   if (product.capabilities?.email) modules.add('email');
   if (product.capabilities?.realtime) modules.add('realtime');
 
-  const identityProviders = selectIdentity(product);
   const database = selectDatabase(product);
   const paymentProvider = selectPayment(product);
-
+  const plans = product.monetization === 'free' ? [] : normalizePricingPlans(product);
   const adapters = {
-    identity: identityProviders.map((provider) => adapterRecord('identity', provider)),
+    identity: selectIdentity(product).map((provider) => adapterRecord('identity', provider)),
     database: adapterRecord('database', database),
     payment: paymentProvider ? adapterRecord('payment', paymentProvider) : null,
   };
 
-  const cloudflare = ['workers', 'assets'];
-  cloudflare.push(database === 'd1' ? 'd1' : 'hyperdrive');
+  const cloudflare = ['workers', 'assets', database === 'd1' ? 'd1' : 'hyperdrive'];
   if (modules.has('jobs')) cloudflare.push('queues');
   if (modules.has('storage')) cloudflare.push('r2');
   if (modules.has('realtime')) cloudflare.push('durable-objects');
@@ -107,52 +102,29 @@ export function resolvePlan(contracts) {
   for (const name of modules) {
     const metadata = MODULES[name];
     if (!metadata || metadata.status !== 'implemented') {
-      blockers.push({
-        severity: 'blocker',
-        code: `MODULE_${name.toUpperCase().replaceAll('-', '_')}_NOT_IMPLEMENTED`,
-        message: `${name} is selected but its reusable production module is not implemented`,
-      });
+      blockers.push({ severity: 'blocker', code: `MODULE_${name.toUpperCase().replaceAll('-', '_')}_NOT_IMPLEMENTED`, message: `${name} is selected but its reusable production module is not implemented` });
     }
   }
   for (const adapter of [...adapters.identity, adapters.database, adapters.payment].filter(Boolean)) {
     if (adapter.status !== 'implemented') {
-      blockers.push({
-        severity: 'blocker',
-        code: `ADAPTER_${String(adapter.provider).toUpperCase().replaceAll('-', '_')}_NOT_IMPLEMENTED`,
-        message: `${adapter.provider} is selected but has no implemented adapter`,
-      });
+      blockers.push({ severity: 'blocker', code: `ADAPTER_${String(adapter.provider).toUpperCase().replaceAll('-', '_')}_NOT_IMPLEMENTED`, message: `${adapter.provider} is selected but has no implemented adapter` });
     }
   }
   if (adapters.payment?.supports && !adapters.payment.supports.includes(product.monetization)) {
-    blockers.push({
-      severity: 'blocker',
-      code: 'PAYMENT_CAPABILITY_MISMATCH',
-      message: `${adapters.payment.provider} does not support monetization mode ${product.monetization}; select a compatible adapter`,
-    });
+    blockers.push({ severity: 'blocker', code: 'PAYMENT_CAPABILITY_MISMATCH', message: `${adapters.payment.provider} does not support monetization mode ${product.monetization}; select a compatible adapter` });
   }
 
   const warnings = [...blockers];
   if (ux.usability_evidence?.status !== 'validated') {
-    warnings.push({
-      severity: 'warning',
-      code: 'USABILITY_NOT_VALIDATED',
-      message: 'product-owner approval does not replace target-user usability evidence',
-    });
+    warnings.push({ severity: 'warning', code: 'USABILITY_NOT_VALIDATED', message: 'product-owner approval does not replace target-user usability evidence' });
   }
-  warnings.push({
-    severity: 'evidence',
-    code: 'EXTERNAL_EVIDENCE_REQUIRED',
-    message: 'the generated implementation is code-complete but remains blocked from production until provider, database, operator, staging, recovery, and explicit human release approval are recorded',
-  });
+  warnings.push({ severity: 'evidence', code: 'EXTERNAL_EVIDENCE_REQUIRED', message: 'the generated implementation remains blocked from production until external evidence and explicit human release approval are recorded' });
 
   const moduleLock = {
     starter: STARTER_VERSION,
     modules: Object.fromEntries([...modules].sort().map((name) => [name, MODULES[name].version])),
     adapters,
   };
-
-  const codeReady = blockers.length === 0;
-  const releaseEvidence = evidenceRequirements([...modules], adapters);
   const planBase = {
     schemaVersion: 2,
     product: {
@@ -162,14 +134,15 @@ export function resolvePlan(contracts) {
       monetization: product.monetization,
       paymentProvider,
       database,
+      plans,
     },
     ux: { journey: ux.primary_journey.id, approval: ux.approval.status },
     feature: { id: feature.id, name: feature.name, touches: feature.touches },
     modules: [...modules].sort(),
     cloudflare,
     moduleLock,
-    codeReady,
-    releaseEvidence,
+    codeReady: blockers.length === 0,
+    releaseEvidence: evidenceRequirements([...modules], adapters),
     warnings,
     productionReady: false,
   };
