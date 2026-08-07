@@ -30,10 +30,55 @@ export interface QueueBinding<T = unknown> {
   sendBatch(messages: { body: T; delaySeconds?: number }[]): Promise<void>;
 }
 
+export interface R2ObjectBodyLike {
+  body: ReadableStream<Uint8Array> | null;
+  size: number;
+  httpEtag?: string;
+  checksums?: { sha256?: ArrayBuffer };
+  httpMetadata?: { contentType?: string; contentDisposition?: string };
+  customMetadata?: Record<string, string>;
+}
+
+export interface R2PutOptionsLike {
+  httpMetadata?: { contentType?: string; contentDisposition?: string };
+  customMetadata?: Record<string, string>;
+  sha256?: ArrayBuffer | string;
+}
+
 export interface R2BucketLike {
-  get(key: string): Promise<unknown>;
-  put(key: string, value: ArrayBuffer | ArrayBufferView | ReadableStream | string): Promise<unknown>;
+  head(key: string): Promise<R2ObjectBodyLike | null>;
+  get(key: string): Promise<R2ObjectBodyLike | null>;
+  put(
+    key: string,
+    value: ArrayBuffer | ArrayBufferView | ReadableStream<Uint8Array> | string,
+    options?: R2PutOptionsLike,
+  ): Promise<R2ObjectBodyLike | null>;
   delete(key: string | string[]): Promise<void>;
+}
+
+export interface DurableObjectIdLike {
+  toString(): string;
+}
+
+export interface DurableObjectStubLike {
+  fetch(request: Request): Promise<Response>;
+}
+
+export interface DurableObjectNamespaceLike {
+  idFromName(name: string): DurableObjectIdLike;
+  get(id: DurableObjectIdLike): DurableObjectStubLike;
+}
+
+export interface DurableObjectStorageLike {
+  get<T = unknown>(key: string): Promise<T | undefined>;
+  put<T = unknown>(key: string, value: T): Promise<void>;
+  delete(key: string): Promise<boolean>;
+}
+
+export interface DurableObjectStateLike {
+  storage: DurableObjectStorageLike;
+  acceptWebSocket(socket: WebSocket, tags?: string[]): void;
+  getWebSockets(tag?: string): WebSocket[];
 }
 
 export interface Env {
@@ -41,6 +86,7 @@ export interface Env {
   HYPERDRIVE?: HyperdriveBinding;
   JOBS_QUEUE?: QueueBinding;
   UPLOADS?: R2BucketLike;
+  REALTIME_ROOMS?: DurableObjectNamespaceLike;
   DATABASE_KIND: 'd1' | 'postgres-hyperdrive';
   APP_ENV: 'local' | 'preview' | 'staging' | 'production';
   APP_ORIGIN: string;
@@ -58,6 +104,7 @@ export interface Env {
   RESEND_API_KEY?: string;
   EMAIL_FROM?: string;
   EMAIL_REPLY_TO?: string;
+  STORAGE_MAX_UPLOAD_BYTES?: string;
   ADMIN_BOOTSTRAP_USER_ID?: string;
   ADMIN_BREAK_GLASS_TOKEN?: string;
   TEST_MIGRATIONS?: unknown;
