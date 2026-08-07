@@ -4,9 +4,11 @@ import { database } from '../platform/database';
 import { observeRequests } from '../platform/observability';
 import { securityHeaders } from '../platform/security';
 import { runtimeConfig } from '../generated/runtime-config';
+import { analyticsRoutes } from '../modules/analytics/public';
 import { identityRoutes } from '../modules/identity/public';
 import { billingRoutes } from '../modules/billing/public';
 import { creditsRoutes } from '../modules/credits/public';
+import { entitlementRoutes } from '../modules/entitlement/public';
 import { adminRoutes } from '../modules/admin-support/public';
 import { privacyRoutes } from '../modules/privacy/public';
 
@@ -47,8 +49,10 @@ app.get('/api/ready', async (context) => {
 app.route('/', identityRoutes);
 app.route('/', adminRoutes);
 app.route('/', privacyRoutes);
+if (runtimeConfig.modules.includes('analytics')) app.route('/', analyticsRoutes);
 if (runtimeConfig.modules.includes('billing')) app.route('/', billingRoutes);
 if (runtimeConfig.modules.includes('credits')) app.route('/', creditsRoutes);
+if (runtimeConfig.modules.includes('entitlement')) app.route('/', entitlementRoutes);
 
 app.notFound((context) => context.json({ error: 'not found' }, 404));
 
