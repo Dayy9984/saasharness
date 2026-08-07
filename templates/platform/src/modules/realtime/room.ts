@@ -16,6 +16,8 @@ type WebSocketPairValue = {
   1: HibernatingWebSocket;
 };
 
+type WebSocketResponseInit = ResponseInit & { webSocket: WebSocket };
+
 const WebSocketPairConstructor = (globalThis as unknown as {
   WebSocketPair: new () => WebSocketPairValue;
 }).WebSocketPair;
@@ -48,7 +50,7 @@ function safeMessage(value: string) {
 export class RealtimeRoom {
   constructor(
     private readonly state: DurableObjectStateLike,
-    private readonly env: Env,
+    _env: Env,
   ) {}
 
   async fetch(request: Request): Promise<Response> {
@@ -79,10 +81,8 @@ export class RealtimeRoom {
     }));
     await this.broadcast({ type: 'realtime.presence.joined', roomId, userId, connectedAt }, server);
 
-    return new Response(null, {
-      status: 101,
-      webSocket: client,
-    } as ResponseInit);
+    const init: WebSocketResponseInit = { status: 101, webSocket: client };
+    return new Response(null, init);
   }
 
   async webSocketMessage(socket: WebSocket, message: string | ArrayBuffer) {
@@ -98,15 +98,14 @@ export class RealtimeRoom {
       const payload = safeMessage(text);
       const sequence = (await this.state.storage.get<number>('sequence') ?? 0) + 1;
       await this.state.storage.put('sequence', sequence);
-      const envelope = {
+      await this.broadcast({
         type: 'realtime.message',
         roomId: info.roomId,
         userId: info.userId,
         sequence,
         sentAt: Date.now(),
         payload,
-      };
-      await this.broadcast(envelope);
+      });
     } catch (error) {
       socket.send(JSON.stringify({
         type: 'realtime.error',
