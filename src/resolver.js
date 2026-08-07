@@ -79,6 +79,7 @@ export function resolvePlan(contracts) {
   const feature = contracts.feature.parsed;
   const modules = new Set(Object.entries(MODULES).filter(([, meta]) => meta.baseline).map(([name]) => name));
   addMonetizationModules(modules, product.monetization);
+  if (product.capabilities?.onboarding !== false) modules.add('onboarding');
   if (product.capabilities?.background_jobs) modules.add('jobs');
   if (product.capabilities?.file_uploads) modules.add('storage');
   if (product.capabilities?.email) modules.add('email');
@@ -102,23 +103,43 @@ export function resolvePlan(contracts) {
   for (const name of modules) {
     const metadata = MODULES[name];
     if (!metadata || metadata.status !== 'implemented') {
-      blockers.push({ severity: 'blocker', code: `MODULE_${name.toUpperCase().replaceAll('-', '_')}_NOT_IMPLEMENTED`, message: `${name} is selected but its reusable production module is not implemented` });
+      blockers.push({
+        severity: 'blocker',
+        code: `MODULE_${name.toUpperCase().replaceAll('-', '_')}_NOT_IMPLEMENTED`,
+        message: `${name} is selected but its reusable production module is not implemented`,
+      });
     }
   }
   for (const adapter of [...adapters.identity, adapters.database, adapters.payment].filter(Boolean)) {
     if (adapter.status !== 'implemented') {
-      blockers.push({ severity: 'blocker', code: `ADAPTER_${String(adapter.provider).toUpperCase().replaceAll('-', '_')}_NOT_IMPLEMENTED`, message: `${adapter.provider} is selected but has no implemented adapter` });
+      blockers.push({
+        severity: 'blocker',
+        code: `ADAPTER_${String(adapter.provider).toUpperCase().replaceAll('-', '_')}_NOT_IMPLEMENTED`,
+        message: `${adapter.provider} is selected but has no implemented adapter`,
+      });
     }
   }
   if (adapters.payment?.supports && !adapters.payment.supports.includes(product.monetization)) {
-    blockers.push({ severity: 'blocker', code: 'PAYMENT_CAPABILITY_MISMATCH', message: `${adapters.payment.provider} does not support monetization mode ${product.monetization}; select a compatible adapter` });
+    blockers.push({
+      severity: 'blocker',
+      code: 'PAYMENT_CAPABILITY_MISMATCH',
+      message: `${adapters.payment.provider} does not support monetization mode ${product.monetization}; select a compatible adapter`,
+    });
   }
 
   const warnings = [...blockers];
   if (ux.usability_evidence?.status !== 'validated') {
-    warnings.push({ severity: 'warning', code: 'USABILITY_NOT_VALIDATED', message: 'product-owner approval does not replace target-user usability evidence' });
+    warnings.push({
+      severity: 'warning',
+      code: 'USABILITY_NOT_VALIDATED',
+      message: 'product-owner approval does not replace target-user usability evidence',
+    });
   }
-  warnings.push({ severity: 'evidence', code: 'EXTERNAL_EVIDENCE_REQUIRED', message: 'the generated implementation remains blocked from production until external evidence and explicit human release approval are recorded' });
+  warnings.push({
+    severity: 'evidence',
+    code: 'EXTERNAL_EVIDENCE_REQUIRED',
+    message: 'the generated implementation remains blocked from production until external evidence and explicit human release approval are recorded',
+  });
 
   const moduleLock = {
     starter: STARTER_VERSION,
