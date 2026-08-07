@@ -39,6 +39,10 @@ export async function prepareOutput(outDir, force = false) {
   await ensureDir(outDir);
 }
 
+export async function removePath(filePath) {
+  await rm(filePath, { recursive: true, force: true });
+}
+
 export async function copyFile(source, destination) {
   await ensureDir(path.dirname(destination));
   await cp(source, destination);

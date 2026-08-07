@@ -1,10 +1,18 @@
 import type { Env } from '../../platform/env';
-import { getDiscovery, randomToken, sha256Hex, verifyOidcIdToken } from '../../platform/crypto';
+import { database, isUniqueViolation } from '../../platform/database';
+import {
+  getDiscovery,
+  randomToken,
+  sha256Base64Url,
+  sha256Hex,
+  verifyOidcIdToken,
+} from '../../platform/crypto';
 import { identityProvider, type IdentityProviderName } from './providers';
 
 interface OAuthAttempt {
   provider: IdentityProviderName;
   nonce: string;
+  code_verifier: string;
   return_to: string;
 }
 
@@ -28,10 +36,13 @@ export async function beginLogin(env: Env, providerName: IdentityProviderName, r
   const discovery = await getDiscovery(provider.discoveryUrl);
   const state = randomToken(32);
   const nonce = randomToken(32);
+  const codeVerifier = randomToken(48);
   const timestamp = now();
-  await env.DB.prepare(
-    'INSERT INTO oauth_attempt(state, provider, nonce, return_to, expires_at, created_at) VALUES (?, ?, ?, ?, ?, ?)',
-  ).bind(state, providerName, nonce, safeReturnTo(returnTo), timestamp + 10 * 60 * 1000, timestamp).run();
+  const db = database(env);
+  await db.run(
+    'INSERT INTO oauth_attempt(state, provider, nonce, code_verifier, return_to, expires_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    [state, providerName, nonce, codeVerifier, safeReturnTo(returnTo), timestamp + 10 * 60 * 1000, timestamp],
+  );
 
   const callback = env.APP_ORIGIN + '/api/auth/' + providerName + '/callback';
   const url = new URL(discovery.authorization_endpoint);
@@ -41,18 +52,27 @@ export async function beginLogin(env: Env, providerName: IdentityProviderName, r
   url.searchParams.set('scope', provider.scope);
   url.searchParams.set('state', state);
   url.searchParams.set('nonce', nonce);
+  url.searchParams.set('code_challenge', await sha256Base64Url(codeVerifier));
+  url.searchParams.set('code_challenge_method', 'S256');
   return url.toString();
 }
 
 async function consumeAttempt(env: Env, state: string): Promise<OAuthAttempt> {
-  const attempt = await env.DB.prepare(
-    'DELETE FROM oauth_attempt WHERE state = ? AND expires_at > ? RETURNING provider, nonce, return_to',
-  ).bind(state, now()).first<OAuthAttempt>();
+  const attempt = await database(env).first<OAuthAttempt>(
+    'DELETE FROM oauth_attempt WHERE state = ? AND expires_at > ? RETURNING provider, nonce, code_verifier, return_to',
+    [state, now()],
+  );
   if (!attempt) throw new Error('OAuth state is missing, expired, or already used');
   return attempt;
 }
 
-async function exchangeCode(env: Env, providerName: IdentityProviderName, code: string, nonce: string) {
+async function exchangeCode(
+  env: Env,
+  providerName: IdentityProviderName,
+  code: string,
+  nonce: string,
+  codeVerifier: string,
+) {
   const provider = identityProvider(env, providerName);
   const discovery = await getDiscovery(provider.discoveryUrl);
   const form = new URLSearchParams({
@@ -61,6 +81,7 @@ async function exchangeCode(env: Env, providerName: IdentityProviderName, code: 
     client_id: provider.clientId,
     client_secret: provider.clientSecret,
     redirect_uri: env.APP_ORIGIN + '/api/auth/' + providerName + '/callback',
+    code_verifier: codeVerifier,
   });
   const response = await fetch(discovery.token_endpoint, {
     method: 'POST',
@@ -81,6 +102,7 @@ async function exchangeCode(env: Env, providerName: IdentityProviderName, code: 
 }
 
 async function upsertIdentity(env: Env, provider: IdentityProviderName, claims: Record<string, unknown>): Promise<string> {
+  const db = database(env);
   const subject = String(claims.sub);
   const email = typeof claims.email === 'string' ? claims.email : null;
   const displayName = typeof claims.name === 'string'
@@ -88,40 +110,52 @@ async function upsertIdentity(env: Env, provider: IdentityProviderName, claims: 
     : typeof claims.nickname === 'string'
       ? claims.nickname
       : null;
-  const existing = await env.DB.prepare(
+  const existing = await db.first<{ user_id: string }>(
     'SELECT user_id FROM oauth_identity WHERE provider = ? AND subject = ?',
-  ).bind(provider, subject).first<{ user_id: string }>();
+    [provider, subject],
+  );
   const timestamp = now();
   if (existing) {
-    await env.DB.batch([
-      env.DB.prepare(
-        'UPDATE oauth_identity SET email = ?, display_name = ?, updated_at = ? WHERE provider = ? AND subject = ?',
-      ).bind(email, displayName, timestamp, provider, subject),
-      env.DB.prepare(
-        'UPDATE app_user SET email = COALESCE(?, email), display_name = COALESCE(?, display_name), updated_at = ? WHERE id = ?',
-      ).bind(email, displayName, timestamp, existing.user_id),
+    await db.batch([
+      {
+        sql: 'UPDATE oauth_identity SET email = ?, display_name = ?, updated_at = ? WHERE provider = ? AND subject = ?',
+        params: [email, displayName, timestamp, provider, subject],
+      },
+      {
+        sql: 'UPDATE app_user SET email = COALESCE(?, email), display_name = COALESCE(?, display_name), updated_at = ? WHERE id = ?',
+        params: [email, displayName, timestamp, existing.user_id],
+      },
     ]);
     return existing.user_id;
   }
 
   const userId = crypto.randomUUID();
   try {
-    await env.DB.batch([
-      env.DB.prepare(
-        'INSERT INTO app_user(id, email, display_name, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
-      ).bind(userId, email, displayName, timestamp, timestamp),
-      env.DB.prepare(
-        'INSERT INTO oauth_identity(provider, subject, user_id, email, display_name, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      ).bind(provider, subject, userId, email, displayName, timestamp, timestamp),
-      env.DB.prepare(
-        'INSERT INTO credit_account(user_id, balance, updated_at) VALUES (?, 0, ?)',
-      ).bind(userId, timestamp),
+    await db.batch([
+      {
+        sql: 'INSERT INTO app_user(id, email, display_name, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
+        params: [userId, email, displayName, timestamp, timestamp],
+      },
+      {
+        sql: 'INSERT INTO oauth_identity(provider, subject, user_id, email, display_name, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        params: [provider, subject, userId, email, displayName, timestamp, timestamp],
+      },
+      {
+        sql: 'INSERT INTO credit_account(user_id, balance, updated_at) VALUES (?, 0, ?)',
+        params: [userId, timestamp],
+      },
+      {
+        sql: 'INSERT INTO audit_event(id, actor_id, subject_id, action, payload_json, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+        params: [crypto.randomUUID(), userId, userId, 'identity.created', JSON.stringify({ provider }), timestamp],
+      },
     ]);
     return userId;
   } catch (error) {
-    const winner = await env.DB.prepare(
+    if (!isUniqueViolation(error)) throw error;
+    const winner = await db.first<{ user_id: string }>(
       'SELECT user_id FROM oauth_identity WHERE provider = ? AND subject = ?',
-    ).bind(provider, subject).first<{ user_id: string }>();
+      [provider, subject],
+    );
     if (winner) return winner.user_id;
     throw error;
   }
@@ -131,41 +165,56 @@ async function createSession(env: Env, userId: string): Promise<string> {
   const token = randomToken(32);
   const hash = await sha256Hex(token);
   const timestamp = now();
-  await env.DB.prepare(
-    'INSERT INTO app_session(token_hash, user_id, expires_at, created_at) VALUES (?, ?, ?, ?)',
-  ).bind(hash, userId, timestamp + sessionLifetime, timestamp).run();
+  await database(env).run(
+    'INSERT INTO app_session(token_hash, user_id, expires_at, created_at, last_seen_at) VALUES (?, ?, ?, ?, ?)',
+    [hash, userId, timestamp + sessionLifetime, timestamp, timestamp],
+  );
   return token;
 }
 
 export async function completeLogin(
   env: Env,
+  providerName: IdentityProviderName,
   state: string,
   code: string,
 ): Promise<{ token: string; returnTo: string }> {
   const attempt = await consumeAttempt(env, state);
-  const claims = await exchangeCode(env, attempt.provider, code, attempt.nonce);
+  if (attempt.provider !== providerName) throw new Error('OAuth provider does not match the login attempt');
+  const claims = await exchangeCode(env, attempt.provider, code, attempt.nonce, attempt.code_verifier);
   const userId = await upsertIdentity(env, attempt.provider, claims);
   return { token: await createSession(env, userId), returnTo: attempt.return_to };
 }
 
 export async function getSessionUser(env: Env, rawToken: string | undefined): Promise<SessionUser | null> {
   if (!rawToken) return null;
+  const db = database(env);
   const hash = await sha256Hex(rawToken);
-  const row = await env.DB.prepare(
-    'SELECT u.id, u.email, u.display_name, u.role FROM app_session s JOIN app_user u ON u.id = s.user_id WHERE s.token_hash = ? AND s.expires_at > ? AND u.deleted_at IS NULL',
-  ).bind(hash, now()).first<{
+  const row = await db.first<{
     id: string;
     email: string | null;
     display_name: string | null;
     role: SessionUser['role'];
-  }>();
+  }>(
+    'SELECT u.id, u.email, u.display_name, u.role FROM app_session s JOIN app_user u ON u.id = s.user_id WHERE s.token_hash = ? AND s.expires_at > ? AND s.revoked_at IS NULL AND u.deleted_at IS NULL',
+    [hash, now()],
+  );
   if (!row) return null;
   const role = row.id === env.ADMIN_BOOTSTRAP_USER_ID ? 'admin' : row.role;
+  void db.run('UPDATE app_session SET last_seen_at = ? WHERE token_hash = ?', [now(), hash]);
   return { id: row.id, email: row.email, displayName: row.display_name, role };
 }
 
 export async function revokeSession(env: Env, rawToken: string | undefined): Promise<void> {
   if (!rawToken) return;
-  await env.DB.prepare('DELETE FROM app_session WHERE token_hash = ?')
-    .bind(await sha256Hex(rawToken)).run();
+  await database(env).run(
+    'UPDATE app_session SET revoked_at = ? WHERE token_hash = ? AND revoked_at IS NULL',
+    [now(), await sha256Hex(rawToken)],
+  );
+}
+
+export async function revokeAllSessions(env: Env, userId: string): Promise<void> {
+  await database(env).run(
+    'UPDATE app_session SET revoked_at = ? WHERE user_id = ? AND revoked_at IS NULL',
+    [now(), userId],
+  );
 }

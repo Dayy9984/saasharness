@@ -1,10 +1,19 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadContracts, validateContracts } from './contracts.js';
-import { prepareOutput, writeFiles, copyDirectory, copyFile, exists } from './fs-utils.js';
+import {
+  prepareOutput,
+  writeFiles,
+  copyDirectory,
+  copyFile,
+  exists,
+  removePath,
+} from './fs-utils.js';
 import { resolvePlan } from './resolver.js';
 import { starterFiles } from './starter-files.js';
 import { platformConfigFiles } from './platform-config.js';
+import { pricingMigrationFiles } from './pricing.js';
+import { initialReleaseEvidence, releaseApprovalSource } from './release-evidence.js';
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -16,6 +25,25 @@ export async function buildPlan(contractDir, options = {}) {
   if (!validation.ok) throw new Error(`contract validation failed:\n- ${validation.errors.join('\n- ')}`);
   const plan = resolvePlan(contracts);
   return { contracts, validation, plan };
+}
+
+async function normalizeDatabaseArtifacts(outDir, plan) {
+  for (const legacy of ['0001_base.sql', '0001_platform.sql', 'README.md']) {
+    await removePath(path.join(outDir, 'migrations', legacy));
+  }
+
+  const database = plan.moduleLock.adapters.database.provider;
+  if (database === 'd1') {
+    await removePath(path.join(outDir, 'migrations', 'postgres'));
+    if (!await exists(path.join(outDir, 'migrations', 'd1', '0001_platform.sql'))) {
+      throw new Error('d1 profile requires migrations/d1/0001_platform.sql');
+    }
+  } else if (database === 'postgres-hyperdrive') {
+    await removePath(path.join(outDir, 'migrations', 'd1'));
+    if (!await exists(path.join(outDir, 'migrations', 'postgres', '0001_platform.sql'))) {
+      throw new Error('postgres-hyperdrive profile requires migrations/postgres/0001_platform.sql');
+    }
+  }
 }
 
 export async function assembleProject(contractDir, outDir, options = {}) {
@@ -36,7 +64,16 @@ export async function assembleProject(contractDir, outDir, options = {}) {
 
   await writeFiles(outDir, starterFiles(plan, raw));
   await copyDirectory(path.join(packageRoot, 'templates', 'platform'), outDir);
-  await writeFiles(outDir, platformConfigFiles(plan));
+  await normalizeDatabaseArtifacts(outDir, plan);
+  await writeFiles(outDir, {
+    ...platformConfigFiles(plan),
+    ...pricingMigrationFiles(plan),
+    '.saasharness/release-evidence.json': `${JSON.stringify(initialReleaseEvidence(plan), null, 2)}\n`,
+    'src/generated/release-approval.ts': releaseApprovalSource({
+      productionReady: false,
+      profileHash: plan.profileHash,
+    }),
+  });
   await copyDirectory(path.join(packageRoot, 'skills'), path.join(outDir, '.agents', 'skills'));
   await copyDirectory(path.join(packageRoot, 'integrations'), path.join(outDir, '.saasharness', 'upstreams'));
   await copyFile(path.join(packageRoot, 'upstreams.lock.json'), path.join(outDir, '.saasharness', 'upstreams.lock.json'));

@@ -10,39 +10,46 @@ function WorkflowHome() {
   return (
     <main className="ux-shell">
       <header className="ux-heading">
-        <p className="ux-eyebrow">Human-in-the-loop React UX Lab</p>
-        <h1>Clean B2C foundation before components</h1>
-        <p>Confirm a short product UI foundation, compare fifteen practical treatments of the same standard SaaS screen, approve one, then build every page and responsive state with realistic mock data.</p>
+        <h1>React UX approval workflow</h1>
+        <p>Agree on a short product UI foundation, compare practical treatments of one screen, approve one, then complete every page and state with realistic mock data before production implementation.</p>
       </header>
-      <ol className="ux-workflow-grid">
+      <ol className="ux-workflow-list">
         <li>
-          <span>1</span>
-          <h2>SOUL.md</h2>
-          <p>A brief contract for clarity, hierarchy, density, control material, motion, accessibility, references, and anti-patterns. It is not a branding manifesto.</p>
-          <code>saasharness run . --stage ux-philosophy --execute</code>
+          <span className="ux-step-number">1</span>
+          <div>
+            <h2>Approve the UI foundation</h2>
+            <p><code>SOUL.md</code> records hierarchy, density, control material, motion, accessibility, references, and explicit anti-patterns. It stays short.</p>
+            <code>saasharness run . --stage ux-philosophy --execute</code>
+          </div>
         </li>
         <li>
-          <span>2</span>
-          <h2>Public research + 15 UI treatments</h2>
-          <p>Research clean product interfaces and compare the same IA with subtle button, surface, density, radius, accent, focus, and motion differences.</p>
-          <a href="/__ux/themes">Open UI treatment gallery</a>
+          <span className="ux-step-number">2</span>
+          <div>
+            <h2>Compare 15 component treatments</h2>
+            <p>The IA, layout, content, and task remain fixed. Only useful control and surface decisions change.</p>
+            <a href="/__ux/themes">Open the treatment gallery</a>
+          </div>
         </li>
         <li>
-          <span>3</span>
-          <h2>Treatment approval</h2>
-          <p>Selected treatment: <strong>{approvedThemeId ?? 'not source-approved'}</strong></p>
-          <p>{themes.length} clean variants are loaded.</p>
+          <span className="ux-step-number">3</span>
+          <div>
+            <h2>Record the human selection</h2>
+            <p>Selected treatment: <strong>{approvedThemeId ?? 'not approved'}</strong>. {themes.length} candidates are available.</p>
+          </div>
         </li>
         <li>
-          <span>4</span>
-          <h2>Complete React UX mock</h2>
-          <p>After approval, construct reusable components and every required page, state, journey, and responsive behavior with realistic mock data before production implementation begins.</p>
-          <a href="/__ux/prototype">Open product prototype</a>
+          <span className="ux-step-number">4</span>
+          <div>
+            <h2>Complete the product mock</h2>
+            <p>Build the real IA, onboarding, core flow, settings, billing, empty, loading, error, permission, and recovery states as reusable React components.</p>
+            <a href="/__ux/prototype">Open the product prototype</a>
+          </div>
         </li>
       </ol>
       <section className="ux-policy-note">
-        <h2>Approval order</h2>
+        <h2>Stage order</h2>
         <code>discovery → ux-philosophy → ux-themes → ux-prototype → architecture</code>
+        <p>Each stage runs independent critics and still requires explicit human approval.</p>
       </section>
     </main>
   );

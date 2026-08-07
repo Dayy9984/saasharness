@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "policy": {
     "strategy": "upstream-first",
     "customCodeAllowedFor": [
@@ -13,8 +13,9 @@
     "notCountedAsIntegration": [
       "README inspiration",
       "unattributed reimplementation",
-      "a source URL without an executable adapter, preset, plugin, attributed port, or explicit bounded reference role"
-    ]
+      "a source URL without an executable adapter, preset, plugin, attributed port, copied skill, or explicit bounded reference role"
+    ],
+    "copyleftBoundary": "AGPL and unverified-license repositories are reference-only and must never be copied into generated proprietary product code."
   },
   "upstreams": {
     "spec-kit": {
@@ -38,9 +39,58 @@
       "ref": "a075d89bdbe60b2b00220cb0527fb5091e84215e",
       "version": "3.5.0",
       "license": "Apache-2.0",
-      "role": "default UI design critic, anti-pattern detector, audit and hardening tool",
+      "role": "default rendered UI design critic, audit, hardening, and motion tool",
       "mode": "pinned project install",
       "required": true
+    },
+    "no-slop-ui": {
+      "repository": "LeoStehlik/no-slop-ui",
+      "ref": "4f0ad7d1d5e670fda1b2b0063da2e52153e784bd",
+      "version": "0.2.1",
+      "license": "MIT",
+      "role": "hard ban list for generic AI glass, gradients, giant radii, dashboard heroes, filler copy, fake metrics, and decorative card grids",
+      "mode": "copy pinned canonical skill and references into every generated project",
+      "requiredFor": ["ux-philosophy", "ux-themes", "ux-prototype", "implementation"]
+    },
+    "uizze-anti-slop": {
+      "repository": "uizze/uizze",
+      "ref": "7011da082f6d3428bef9fa18acbcc07e72a02bb8",
+      "license": "MIT",
+      "role": "product-specific design contract and required-state finish gate",
+      "mode": "copy pinned anti-ui-slop skill into every generated project",
+      "requiredFor": ["ux-philosophy", "ux-themes", "ux-prototype", "implementation"]
+    },
+    "uizze-ui-slop-gate": {
+      "repository": "uizze/uizze-ui-slop-gate",
+      "ref": "170d6c03bc4936b6cf85cc5fbdc725013adf94da",
+      "license": "MIT",
+      "role": "local source-only PR finish gate for inert controls, missing states, token drift, and generic dashboard cues",
+      "mode": "GitHub Action pinned by full commit SHA; no screenshot or source upload",
+      "requiredFor": ["implementation"]
+    },
+    "praeclarum-ui": {
+      "repository": "praeclarum/ui.md",
+      "ref": "2ec6bb859cb56e541029262a85e2231a5bbf6e0c",
+      "license": "MIT",
+      "role": "user mental-model, predictability, control, recovery, and task-completion rules",
+      "mode": "copy pinned UI.md with a local skill router",
+      "requiredFor": ["ux-philosophy", "ux-prototype"]
+    },
+    "frontend-no-slop": {
+      "repository": "Emily2040/frontend-no-slop",
+      "ref": "c360b7a233874b0e130ac5032ca27ca6178c6224",
+      "license": "MIT",
+      "role": "page-type lenses, forbidden-slop registry, output schemas, and frontend evaluation fixtures",
+      "mode": "copy pinned canonical .agents skill directory",
+      "requiredFor": ["ux-themes", "ux-prototype", "implementation"]
+    },
+    "coss-ui": {
+      "repository": "cosscom/coss",
+      "ref": "e43fa4a8da4c490ebf3e1e1707b2a9af6fa2a217",
+      "license": "MIT-SUBTREE:apps/ui",
+      "role": "Cal.com production component system, composition rules, primitives, and particles",
+      "mode": "copy only the MIT-licensed apps/ui skill and use the pinned coss registry as the component source; never copy AGPL repository areas",
+      "requiredFor": ["ux-prototype", "implementation"]
     },
     "pro-ui-engineering": {
       "repository": "yzfly/pro-ui-engineering-skill",
@@ -48,7 +98,7 @@
       "license": "MIT",
       "role": "bundled attributed B2C visual-system, component-recipe, and spring-physics reference subset",
       "mode": "curated source subset under skills/pro-ui-engineering",
-      "requiredFor": ["ux-ia"]
+      "requiredFor": ["ux-prototype"]
     },
     "open-design": {
       "repository": "nexu-io/open-design",
@@ -56,8 +106,39 @@
       "license": "Apache-2.0",
       "role": "running design artifact and prototype engine",
       "mode": "external daemon and MCP integration",
-      "requiredFor": ["ux-ia"],
-      "fallback": "React UX Lab plus bundled Pro UI Engineering and Impeccable"
+      "requiredFor": ["ux-prototype"],
+      "fallback": "React UX Lab plus pinned anti-slop skills, coss UI, Pro UI Engineering, and Impeccable"
+    },
+    "onboardjs": {
+      "repository": "Somafet/onboardjs",
+      "ref": "2bf5ca4b190754fa64e043d42312026f6e862503",
+      "license": "MIT:packages/core,packages/react",
+      "role": "headless, resumable, analytics-aware onboarding flow engine",
+      "mode": "pinned source reference plus exact @onboardjs/core and @onboardjs/react package versions",
+      "requiredFor": ["onboarding"]
+    },
+    "saas-ui-core": {
+      "repository": "saas-js/saas-ui",
+      "ref": "24532ae7ceb20ba55033afef32aac4fdd567c2ea",
+      "license": "MIT",
+      "role": "open-source SaaS component and workflow-pattern reference",
+      "mode": "bounded reference and optional component source; private Pro code is explicitly excluded",
+      "required": false
+    },
+    "midday": {
+      "repository": "midday-ai/midday",
+      "ref": "51587319f26a0ffaa9dfccab1920373cb65689b7",
+      "license": "AGPL-3.0",
+      "role": "real commercial-product IA, onboarding, dashboard, settings, empty-state, and feedback-flow reference",
+      "mode": "reference-only-no-copy because generated proprietary products must not inherit AGPL code",
+      "required": false
+    },
+    "midday-v1": {
+      "repository": "midday-ai/v1",
+      "license": "UNVERIFIED_REPOSITORY_UNAVAILABLE",
+      "role": "historical Midday-derived starter architecture reference",
+      "mode": "not-integrated: original repository is currently unavailable and forks do not provide a verified license",
+      "required": false
     },
     "ui-ux-pro-max": {
       "repository": "nextlevelbuilder/ui-ux-pro-max-skill",
@@ -65,6 +146,24 @@
       "license": "REVIEW_REQUIRED",
       "role": "optional searchable design-intelligence database",
       "mode": "external CLI only after license review",
+      "required": false
+    },
+    "saas-design-codex": {
+      "license": "COMMERCIAL_PRIVATE",
+      "role": "optional commercial completed-screen and SaaS workflow reference",
+      "mode": "external-reference-only; no private or paid source is bundled",
+      "required": false
+    },
+    "layr": {
+      "license": "UNVERIFIED_PUBLIC_SOURCE",
+      "role": "optional UX hierarchy, friction, and trust-method reference",
+      "mode": "external-reference-only until a permissively licensed canonical repository is verified",
+      "required": false
+    },
+    "flows-sh": {
+      "license": "UNVERIFIED_PUBLIC_SOURCE",
+      "role": "optional product-adoption and onboarding-flow reference",
+      "mode": "external-reference-only until a canonical repository and license are verified",
       "required": false
     },
     "openspec": {
@@ -133,7 +232,7 @@
       "repository": "Blink-h/agent-startup-kit",
       "license": "UNKNOWN",
       "role": "previously considered skill-driven SaaS workflow reference",
-      "mode": "not integrated: primary repository currently unavailable/404",
+      "mode": "not-integrated: primary repository currently unavailable/404",
       "required": false
     },
     "cloudflare-react-template": {

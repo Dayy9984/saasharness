@@ -14,20 +14,37 @@ const lock = {
   upstreams: {
     'cloudflare-react-template': { repository: 'cloudflare/templates', ref: 'a'.repeat(40), license: 'Apache-2.0' },
     'spec-kit': { repository: 'github/spec-kit', ref: 'b'.repeat(40), license: 'MIT' },
+    'no-slop-ui': { repository: 'example/no-slop', ref: 'd'.repeat(40), license: 'MIT' },
+    midday: { repository: 'midday-ai/midday', ref: 'e'.repeat(40), license: 'AGPL-3.0', mode: 'reference-only-no-copy' },
     'ui-ux-pro-max': { repository: 'example/review', ref: 'c'.repeat(40), license: 'REVIEW_REQUIRED' },
     'agent-startup-kit': { repository: 'example/missing', license: 'UNKNOWN', mode: 'not-integrated-source-unavailable' },
   },
 };
 
-test('core profile is an upstream-composed product base', () => {
-  for (const required of ['cloudflare-react-template', 'spec-kit', 'superpowers', 'open-design', 'impeccable', 'ai-saas-starter']) {
+test('core profile is an upstream-composed product and anti-slop base', () => {
+  for (const required of [
+    'cloudflare-react-template',
+    'spec-kit',
+    'superpowers',
+    'open-design',
+    'impeccable',
+    'no-slop-ui',
+    'uizze-anti-slop',
+    'uizze-ui-slop-gate',
+    'praeclarum-ui',
+    'frontend-no-slop',
+    'coss-ui',
+    'onboardjs',
+    'ai-saas-starter',
+  ]) {
     assert.ok(UPSTREAM_PROFILES.core.includes(required), required);
   }
 });
 
-test('selection rejects unverified or license-blocked repositories', () => {
+test('selection rejects unverified, commercial, and copyleft reference-only repositories', () => {
   const selected = selectUpstreams(lock, { profile: 'all' }).map((item) => item.name);
-  assert.deepEqual(selected, ['cloudflare-react-template', 'spec-kit']);
+  assert.deepEqual(selected, ['cloudflare-react-template', 'spec-kit', 'no-slop-ui']);
+  assert.equal(isSyncableUpstream(lock.upstreams.midday), false);
   assert.equal(isSyncableUpstream(lock.upstreams['ui-ux-pro-max']), false);
   assert.equal(isSyncableUpstream(lock.upstreams['agent-startup-kit']), false);
 });

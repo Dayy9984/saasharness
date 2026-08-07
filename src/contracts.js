@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { readUtf8 } from './fs-utils.js';
 import { parseYamlLite } from './yaml-lite.js';
+import { validatePricingPlans } from './pricing.js';
 
 export const CONTRACT_FILES = Object.freeze({
   product: 'product.yml',
@@ -11,6 +12,9 @@ export const CONTRACT_FILES = Object.freeze({
 const MONETIZATION = new Set(['free', 'one-time', 'subscription', 'credits', 'subscription-plus-credits']);
 const REGIONS = new Set(['kr', 'global']);
 const TARGETS = new Set(['web']);
+const DATABASES = new Set(['auto', 'd1', 'postgres-hyperdrive']);
+const PAYMENT_PROVIDERS = new Set(['unset', 'stripe', 'toss']);
+const IDENTITY_PROVIDERS = new Set(['google', 'kakao']);
 
 function requireString(value, label, errors) {
   if (typeof value !== 'string' || value.trim() === '') errors.push(`${label} must be a non-empty string`);
@@ -29,7 +33,7 @@ function requireApproval(contract, label, errors) {
 
 function validateUxDesignLifecycle(ux, strict, errors, warnings) {
   if ((ux.version ?? 1) < 3) {
-    warnings.push('legacy UX contract detected; migrate to the SOUL → 15 themes → prototype lifecycle');
+    warnings.push('legacy UX contract detected; migrate to the SOUL → 15 treatments → prototype lifecycle');
     return;
   }
   const checks = [
@@ -46,10 +50,33 @@ function validateUxDesignLifecycle(ux, strict, errors, warnings) {
   const count = ux.theme_exploration?.candidate_count;
   if (count !== 15) {
     if (strict) errors.push('ux.theme_exploration.candidate_count must be exactly 15');
-    else warnings.push('theme exploration must produce exactly 15 same-screen variants before selection');
+    else warnings.push('treatment exploration must produce exactly 15 same-screen variants before selection');
   }
   if (ux.theme_exploration?.automated_scraping && ux.theme_exploration.automated_scraping !== 'forbidden') {
     errors.push('ux.theme_exploration.automated_scraping must be forbidden');
+  }
+}
+
+function validateProductPlatform(product, errors) {
+  const providers = product.identity?.providers;
+  if (providers !== undefined) {
+    if (!Array.isArray(providers) || providers.length === 0) {
+      errors.push('product.identity.providers must be omitted or contain at least one supported provider');
+    } else {
+      const unsupported = providers.filter((provider) => !IDENTITY_PROVIDERS.has(provider));
+      if (unsupported.length) errors.push(`unsupported identity providers: ${unsupported.join(', ')}`);
+      if (new Set(providers).size !== providers.length) errors.push('product.identity.providers must not contain duplicates');
+    }
+  }
+  const payment = product.payment?.provider ?? 'unset';
+  if (!PAYMENT_PROVIDERS.has(payment)) errors.push('product.payment.provider must be unset, stripe, or toss');
+  const database = product.platform?.database ?? 'auto';
+  if (!DATABASES.has(database)) errors.push('product.platform.database must be auto, d1, or postgres-hyperdrive');
+  for (const capability of ['onboarding', 'background_jobs', 'file_uploads', 'email', 'realtime']) {
+    const value = product.capabilities?.[capability];
+    if (value !== undefined && typeof value !== 'boolean') {
+      errors.push(`product.capabilities.${capability} must be true or false`);
+    }
   }
 }
 
@@ -80,9 +107,11 @@ export function validateContracts(contracts, options = {}) {
   if (!Array.isArray(product.targets) || product.targets.length === 0) errors.push('product.targets must contain web');
   else {
     const unsupported = product.targets.filter((target) => !TARGETS.has(target));
-    if (unsupported.length) errors.push(`unsupported targets in v0.2: ${unsupported.join(', ')}`);
+    if (unsupported.length) errors.push(`unsupported targets: ${unsupported.join(', ')}`);
     if (!product.targets.includes('web')) errors.push('product.targets must include web');
   }
+  validateProductPlatform(product, errors);
+  validatePricingPlans(product, errors, warnings);
 
   requireString(ux.primary_journey?.id, 'ux.primary_journey.id', errors);
   requireString(ux.primary_journey?.goal, 'ux.primary_journey.goal', errors);

@@ -1,14 +1,14 @@
 {
   "name": "saasharness",
-  "version": "0.5.0",
-  "description": "Upstream-composed B2C SaaS bootstrap with design-philosophy, 15-theme React exploration, human approval, mandatory critic loops, and Cloudflare product assembly",
+  "version": "1.0.0",
+  "description": "Upstream-composed React and Cloudflare B2C SaaS harness with human-approved UX, production platform modules, independent critics, TDD, and release evidence gates",
   "type": "module",
   "bin": {
     "saasharness": "./bin/saasharness.js"
   },
   "scripts": {
     "test": "node --test test/*.test.js",
-    "check:syntax": "node --check bin/saasharness.js && node --check src/cli.js && node --check src/contracts.js && node --check src/yaml-lite.js && node --check src/resolver.js && node --check src/registry.js && node --check src/assembler.js && node --check src/risk-router.js && node --check src/fs-utils.js && node --check src/starter-files.js && node --check src/critic.js && node --check src/workflow.js && node --check src/artifact-templates.js && node --check src/integrations.js && node --check src/platform-config.js && node --check src/upstream-workspace.js && node --check src/upstream-installers.js && node --check src/agent-config.js && node --check src/design-workflow.js && node --check src/orchestrator.js && node --check src/bootstrap.js",
+    "check:syntax": "node --check bin/saasharness.js && node --check src/cli.js && node --check src/contracts.js && node --check src/yaml-lite.js && node --check src/pricing.js && node --check src/resolver.js && node --check src/registry.js && node --check src/assembler.js && node --check src/risk-router.js && node --check src/fs-utils.js && node --check src/starter-files.js && node --check src/critic.js && node --check src/workflow.js && node --check src/artifact-templates.js && node --check src/integrations.js && node --check src/platform-config.js && node --check src/upstream-workspace.js && node --check src/upstream-installers.js && node --check src/ui-upstreams.js && node --check src/agent-config.js && node --check src/design-workflow.js && node --check src/orchestrator.js && node --check src/bootstrap.js && node --check src/release-evidence.js && node --check src/release-command.js",
     "check": "npm run check:syntax && npm test",
     "smoke": "node ./bin/saasharness.js --help"
   },

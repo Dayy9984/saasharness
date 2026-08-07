@@ -28,15 +28,14 @@ export function ThemePreview({ themeId }: { themeId: string }) {
   return (
     <main className="ux-shell">
       <header className="ux-heading">
-        <p className="ux-eyebrow">UI treatment · {theme.id}</p>
         <h1>{theme.name}</h1>
         <p>{theme.thesis}</p>
-        <a className="ux-back-link" href="/__ux/themes">← All 15 variants</a>
+        <a className="ux-back-link" href="/__ux/themes">Back to all 15 treatments</a>
       </header>
       <ThemeFrame theme={theme} />
       <section className="theme-detail-grid">
         <article>
-          <h2>Practical differences</h2>
+          <h2>What changes</h2>
           <dl>
             <div><dt>Buttons</dt><dd>{theme.buttonTreatment}</dd></div>
             <div><dt>Surfaces</dt><dd>{theme.surfaceTreatment}</dd></div>
@@ -46,17 +45,17 @@ export function ThemePreview({ themeId }: { themeId: string }) {
           </dl>
         </article>
         <article>
-          <h2>Reference research queries</h2>
+          <h2>Research evidence</h2>
           <ul>{theme.pinterestQueries.map((query) => <li key={query}>{query}</li>)}</ul>
-          <p>Record reviewed public URLs and the specific UI principle learned. Do not copy third-party assets or reproduce another product's brand.</p>
+          <p>Record the reviewed public URLs and the specific product principle learned. Do not copy brand assets or recreate another product's visual identity.</p>
         </article>
       </section>
       <section className="theme-approval-panel">
-        <h2>Human approval</h2>
-        <p>The selected variant changes the component treatment, not the approved IA or user flow. The CLI writes the source-controlled decision.</p>
-        <button type="button" onClick={choose}>Choose and copy approval command</button>
+        <h2>Approve this treatment</h2>
+        <p>This decision changes only component treatment. The approved IA and user flow remain unchanged.</p>
+        <button type="button" onClick={choose}>Choose treatment</button>
         <code>{command}</code>
-        {copied && <p role="status">Command copied.</p>}
+        {copied && <p role="status">Approval command copied.</p>}
       </section>
     </main>
   );

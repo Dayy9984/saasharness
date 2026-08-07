@@ -1,4 +1,4 @@
-version: 2
+version: 3
 name: __PRODUCT_NAME__
 region: kr
 targets: [web]
@@ -15,8 +15,19 @@ pricing:
   free_paid_boundary: ""
   refund_policy: ""
   cancellation_policy: ""
+  plans:
+    standard-monthly:
+      name: Standard Monthly
+      billing_mode: subscription
+      amount_minor: 12900
+      currency: KRW
+      entitlement_key: standard
+      credit_amount: 50
+      stripe_price_id: null
+      active: true
 
 capabilities:
+  onboarding: true
   background_jobs: true
   file_uploads: false
   email: true
@@ -31,7 +42,7 @@ payment:
 data_policy:
   pii_level: basic
   retention_days: 365
-  deletion: full-delete
+  deletion: anonymize-financial-retention
 
 platform:
   preferred: cloudflare
