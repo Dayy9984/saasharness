@@ -1,0 +1,9 @@
+version: 1
+id: feature-demo-health
+name: Render generated starter status
+risk: low
+touches: [ui, api]
+acceptance: [health-route-returns-ok, production-blocker-is-visible]
+approval:
+  status: approved
+  approved_by: repository-fixture

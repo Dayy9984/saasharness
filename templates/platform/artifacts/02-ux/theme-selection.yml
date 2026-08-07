@@ -1,0 +1,10 @@
+version: 2
+status: draft
+theme_id: ""
+theme_name: ""
+scope: component-treatment-only
+ia_layout_and_user_flow_change: forbidden
+approved_by: ""
+approved_at: ""
+soul: SOUL.md
+catalog: src/react/ux-lab/theme-catalog.json
