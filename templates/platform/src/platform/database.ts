@@ -1,4 +1,4 @@
-import { Pool, type PoolClient, type QueryResultRow } from 'pg';
+import { Pool, type PoolClient } from 'pg';
 import type { D1DatabaseLike, Env } from './env';
 
 export interface SqlStatement {
@@ -22,12 +22,15 @@ export interface SqlDatabase {
 
 function translatePostgresPlaceholders(query: string): string {
   let index = 0;
-  let quoted = false;
+  let singleQuoted = false;
+  let doubleQuoted = false;
   let result = '';
   for (let cursor = 0; cursor < query.length; cursor += 1) {
     const character = query[cursor];
-    if (character === "'" && query[cursor - 1] !== '\\') quoted = !quoted;
-    if (character === '?' && !quoted) {
+    const previous = query[cursor - 1];
+    if (character === "'" && previous !== '\\' && !doubleQuoted) singleQuoted = !singleQuoted;
+    if (character === '"' && previous !== '\\' && !singleQuoted) doubleQuoted = !doubleQuoted;
+    if (character === '?' && !singleQuoted && !doubleQuoted) {
       index += 1;
       result += '$' + index;
     } else {
@@ -82,6 +85,7 @@ function poolFor(connectionString: string): Pool {
     connectionTimeoutMillis: 10_000,
     allowExitOnIdle: true,
   });
+  pool.on('error', (error) => console.error(JSON.stringify({ type: 'postgres_pool_error', message: error.message })));
   pools.set(connectionString, pool);
   return pool;
 }
@@ -89,32 +93,27 @@ function poolFor(connectionString: string): Pool {
 function postgresClient(client: Pool | PoolClient): SqlDatabase {
   const adapter: SqlDatabase = {
     kind: 'postgres-hyperdrive',
-    async run<T extends QueryResultRow>(sql: string, params: unknown[] = []) {
-      const result = await client.query<T>(translatePostgresPlaceholders(sql), params);
-      return { changes: result.rowCount ?? 0, rows: result.rows };
+    async run<T>(sql: string, params: unknown[] = []) {
+      const result = await client.query(translatePostgresPlaceholders(sql), params);
+      return { changes: result.rowCount ?? 0, rows: result.rows as T[] };
     },
-    async first<T extends QueryResultRow>(sql: string, params: unknown[] = []) {
-      const result = await client.query<T>(translatePostgresPlaceholders(sql), params);
-      return result.rows[0] ?? null;
+    async first<T>(sql: string, params: unknown[] = []) {
+      const result = await client.query(translatePostgresPlaceholders(sql), params);
+      return (result.rows[0] as T | undefined) ?? null;
     },
-    async all<T extends QueryResultRow>(sql: string, params: unknown[] = []) {
-      const result = await client.query<T>(translatePostgresPlaceholders(sql), params);
-      return result.rows;
+    async all<T>(sql: string, params: unknown[] = []) {
+      const result = await client.query(translatePostgresPlaceholders(sql), params);
+      return result.rows as T[];
     },
     async batch(statements: SqlStatement[]) {
-      const pool = client instanceof Pool ? client : null;
-      if (!pool) {
-        const results = [];
-        for (const statement of statements) {
-          results.push(await adapter.run(statement.sql, statement.params));
-        }
+      if (!(client instanceof Pool)) {
+        const results: SqlRunResult[] = [];
+        for (const statement of statements) results.push(await adapter.run(statement.sql, statement.params));
         return results;
       }
       return adapter.transaction(async (tx) => {
-        const results = [];
-        for (const statement of statements) {
-          results.push(await tx.run(statement.sql, statement.params));
-        }
+        const results: SqlRunResult[] = [];
+        for (const statement of statements) results.push(await tx.run(statement.sql, statement.params));
         return results;
       });
     },
