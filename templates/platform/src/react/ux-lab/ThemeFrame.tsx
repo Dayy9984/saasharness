@@ -3,6 +3,12 @@ import themes from './theme-catalog.json';
 
 type Theme = (typeof themes)[number];
 
+const projects = [
+  { name: 'Customer onboarding', status: 'In progress', updated: 'Today' },
+  { name: 'Billing recovery', status: 'Ready for review', updated: 'Yesterday' },
+  { name: 'Account settings', status: 'Draft', updated: '3 days ago' },
+];
+
 export function ThemeFrame({ theme, compact = false }: { theme: Theme; compact?: boolean }) {
   const style = {
     '--theme-bg': theme.background,
@@ -30,50 +36,45 @@ export function ThemeFrame({ theme, compact = false }: { theme: Theme; compact?:
       aria-label={`${theme.name} UI treatment preview`}
     >
       <header className="theme-frame__topbar">
-        <span className="theme-frame__brand">PRODUCT</span>
+        <strong>Workspace</strong>
         <div className="theme-frame__top-actions" aria-hidden="true">
           <span className="theme-frame__search">Search</span>
-          <span className="theme-frame__avatar" />
+          <span className="theme-frame__avatar">J</span>
         </div>
       </header>
       <div className="theme-frame__body">
-        <aside className="theme-frame__rail" aria-hidden="true">
-          <span className="is-active" />
-          <span />
-          <span />
-          <span />
-        </aside>
+        <nav className="theme-frame__rail" aria-label="Preview navigation">
+          <span className="is-active">Overview</span>
+          <span>Projects</span>
+          <span>Activity</span>
+          <span>Settings</span>
+        </nav>
         <div className="theme-frame__content">
           <header className="theme-frame__pagehead">
-            <div className="theme-frame__copy">
-              <p className="theme-frame__kicker">WORKSPACE</p>
-              <h2>Primary product value</h2>
-              <p>The IA and content stay fixed. Only practical component treatment, density, surfaces, controls, and motion intent change.</p>
+            <div>
+              <h2>Projects</h2>
+              <p>Review active work and move the next item forward.</p>
             </div>
-            <div className="theme-frame__actions" aria-hidden="true">
-              <span className="is-primary">PRIMARY ACTION</span>
-              <span>SECONDARY</span>
-            </div>
+            <span className="theme-frame__primary-action" aria-hidden="true">New project</span>
           </header>
-          <section className="theme-frame__metrics" aria-hidden="true">
-            <article><small>ACTIVATION</small><strong>72%</strong><span>+8.4%</span></article>
-            <article><small>ACTIVE USERS</small><strong>1,248</strong><span>today</span></article>
-            <article><small>RESPONSE</small><strong>184 ms</strong><span>p75</span></article>
-          </section>
-          <section className="theme-frame__workspace" aria-hidden="true">
-            <article className="theme-frame__list">
-              <header><strong>Recent activity</strong><span>View all</span></header>
-              <div className="theme-frame__row"><i /><span /><b /></div>
-              <div className="theme-frame__row"><i /><span /><b /></div>
-              <div className="theme-frame__row"><i /><span /><b /></div>
-            </article>
-            <article className="theme-frame__summary">
-              <small>NEXT STEP</small>
-              <strong>Complete the first-value flow</strong>
-              <p>One clear action, one recovery path, no decorative detour.</p>
-              <span>CONTINUE</span>
-            </article>
-          </section>
+          <div className="theme-frame__toolbar" aria-hidden="true">
+            <span>Search projects</span>
+            <span>All statuses</span>
+          </div>
+          <div className="theme-frame__table" role="table" aria-label="Project list preview">
+            <div className="theme-frame__table-head" role="row">
+              <span role="columnheader">Project</span>
+              <span role="columnheader">Status</span>
+              <span role="columnheader">Updated</span>
+            </div>
+            {projects.map((project) => (
+              <div className="theme-frame__row" role="row" key={project.name}>
+                <strong role="cell">{project.name}</strong>
+                <span role="cell">{project.status}</span>
+                <span role="cell">{project.updated}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>
